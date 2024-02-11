@@ -1,21 +1,25 @@
 // utils/workflowUtils.js
-
-// Function to resolve node dependencies based on edges
+// Ensure this function receives properly structured and non-undefined `nodes` and `edges`
 export function resolveNodeDependencies(nodes, edges) {
   const dependencies = {};
+
+  // Initialize dependency array for each node
   nodes.forEach(node => {
-    dependencies[node.id] = []; // Initialize dependency array for each node
+    dependencies[node.id] = [];
   });
 
-  edges.forEach(edge => {
-    // Assuming edge.target depends on edge.source
-    if (dependencies[edge.target]) {
-      dependencies[edge.target].push(edge.source);
-    }
-  });
+  // Safely iterate over edges if it's defined and an array
+  if (Array.isArray(edges)) {
+    edges.forEach(edge => {
+      if (edge.target && dependencies[edge.target]) {
+        dependencies[edge.target].push(edge.source);
+      }
+    });
+  }
 
   return dependencies;
 }
+
 
 // Function to determine execution order using a topological sort
 export function determineExecutionOrder(nodes, edges) {
