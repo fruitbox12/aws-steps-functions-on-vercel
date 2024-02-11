@@ -9,11 +9,12 @@ export default async (req, res) => {
 
   // Fetch the current workflow state
   let { nodes, edges, executionOrder, completedSteps = [] } = await getWorkflowState(workflowStateKey);
+  const { nodess, edgess } = req.body; // Extract nodes and edges from the request body
 
   if (!executionOrder) {
     // Determine execution order if not already done
-    executionOrder = determineExecutionOrder(nodes, edges);
-    await setWorkflowState(workflowStateKey, { nodes, edges, executionOrder, completedSteps });
+    const executionOrder = determineExecutionOrder(nodess, edgess);
+    await setWorkflowState(workflowStateKey, { nodess, edgess, executionOrder, completedSteps });
   }
 
   // Find the next step to execute based on the execution order and completed steps
