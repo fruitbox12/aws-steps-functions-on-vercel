@@ -1,5 +1,5 @@
 # Step Functions on Vercel
-```
+```sh
 curl -X POST "https://aws-steps-functions-on-vercel-mauve.vercel.app/api/step/0?stepIndex=2" \
      -H "Content-Type: application/json" \
      -d '{      
