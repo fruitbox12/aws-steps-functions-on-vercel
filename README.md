@@ -1,5 +1,52 @@
 # Step Functions on Vercel
 ```
+                            [Scheduler]
+                  (Cron: "0 */10 * * * *")
+                Triggers every 10 minutes
+                               |
+                               | (Cron job executes)
+                               v
+              [Trigger] POST /api/step/0?stepIndex=2
+                               |
+                               v
+                    +-------------------+
+                    |   Step 0: Start   |
+                    | (/api/step/0)     |
+                    +---------+---------+
+                              |
+                              | (Checks for new GitHub issues)
+                              v
+                    +---------+---------+
+                    |       HTTP_0      |
+                    | (/api/step/1)     |
+                    | (Fetch new issues)|
+                    +---------+---------+
+                              |
+                              | (GET request to GitHub API)
+                              v
+                    +---------+---------+
+                    |       If Else     |
+                    | (Are there new    |
+                    |  issues?)         |
+                    +--+-------------+--+
+                       |             |
+           +-----------+             +-----------+
+           |                                     |
+    [New issues found]                   [No new issues]
+           |                                     |
+           v                                     v
+  +-------+-------+                     +-------+-------+
+  |     HTTP_1    |                     |     NodeJS    |
+  | (/api/step/2) |                     | (/api/step/3) |
+  | (Update issue)|                     | (Log no new   |
+  | status & label|                     |  issues found)|
+  +---------------+                     +---------------+
+        |                                     |
+        | (Updates GitHub issue)              | (Logs action)
+        v                                     v
+  [Next Step or End]               [Next
+```
+```
                           [Scheduler]
                 (Cron: "0 */10 * * * *")
                       Triggers every 10 seconds
