@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export async function executeHttpNode(node) {
     // Safely access parameters with a fallback to prevent TypeError
     const { method, url } = node.data?.parameters || {};
