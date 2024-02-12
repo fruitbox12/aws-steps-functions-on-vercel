@@ -1,8 +1,9 @@
 # Step Functions on Vercel
 ```
+Trigger() POST => /api/step/STEP_NUMBER?stepIndex=FINAL_STEP_NUMBER
 +----------------+      +---------------------+       +-------------------+
 |                |      |                     |       |                   |
-|  Parse Request |----->| Validate stepIndex  |------>|  Execute HTTP     |
+|Parse POST body |----->| Validate stepIndex  |------>|  Execute HTTP     |
 |                |      |                     |       |  Node for Current |
 +----------------+      +---------------------+       |  Step             |
          |                       |                    |                   |
