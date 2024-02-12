@@ -46,7 +46,7 @@ For Parallel Nodes:
          |             +-------------------------+
          |             |                         |
          |             |  Determine Parallel     |
-         |             |  Execution Paths       |
+         |             |  Execution Paths        |
          |             |                         |
          |             +-------------------------+
          |                       |
@@ -62,8 +62,8 @@ For Parallel Nodes:
          |                       |
          |             +-------------------------+
          |             |                         |
-         |             |  Synchronize and       |
-         |             |  Update Workflow State |
+         |             |  Synchronize and        |
+         |             |  Update Workflow State  |
          |             |                         |
          |             +-------------------------+
          |                       |
