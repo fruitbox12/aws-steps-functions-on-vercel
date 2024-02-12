@@ -1,4 +1,5 @@
 # Step Functions on Vercel
+```
 +----------------+      +---------------------+       +-------------------+
 |                |      |                     |       |                   |
 |  Parse Request |----->| Validate stepIndex  |------>|  Execute HTTP     |
@@ -30,7 +31,7 @@
     |  Next Step    |                 |  Workflow    |
     |               |                 |              |
     +---------------+                 +--------------+
-
+```
 # Description
 The project allows for the dynamic execution of workflows, where each step can be an HTTP request to external services or internal logic. It's designed to showcase how complex workflows can be managed and executed in a serverless environment, providing a scalable and flexible solution for task orchestration.
 ```sh
