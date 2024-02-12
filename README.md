@@ -23,4 +23,15 @@ curl -X POST "https://aws-steps-functions-on-vercel-mauve.vercel.app/api/step/0?
                    }
                },
                {
+                   "id": 2,
+                   "data": {
+                       "parameters": {
+                           "url": "https://swapi.dev/api/planets/1/",
+                           "method": "GET"
+                       }
+                   }
+               }
+           ]
+       }'
+
 ```
