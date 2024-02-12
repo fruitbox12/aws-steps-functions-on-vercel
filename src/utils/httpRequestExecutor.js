@@ -7,7 +7,7 @@ import axios from 'axios';
  * @returns {Promise<Object>} The response data from the HTTP request.
  */
 export async function executeHttpNode(node) {
-    const { method, url, headers, body } = node.data.inputParameters;
+    const { method, url, headers, body } = node.data.parameters;
 
     try {
         const response = await axios({
