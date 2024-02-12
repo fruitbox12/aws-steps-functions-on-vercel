@@ -2,47 +2,34 @@
 import { getWorkflowState, setWorkflowState } from '../../../utils/kvStorage';
 import { executeHttpNode } from '../../../utils/httpRequestExecutor'; // Assume this executes an HTTP request for a node
 import { resolveNodeDependencies, determineExecutionOrder } from '../../../utils/workflowUtils';
-
 export default async (req, res) => {
-  const { stepId } = req.query;
-  const workflowStateKey = 'workflow_state_key'; // Key for your workflow state in Vercel KV
+  // Assuming 'stepIndex' is passed as a query parameter indicating the current step's index (starting from 0)
+  const stepIndex = parseInt(req.query.stepIndex, 10);
+  const { nodes } = req.body; // Assuming 'nodes' are provided in the request body
 
-  // Fetch the current workflow state
-  let { nodes, edges, executionOrder, completedSteps = [] } = await getWorkflowState(workflowStateKey);
-  const { nodess, edgess } = req.body; // Extract nodes and edges from the request body
-
-  if (!executionOrder) {
-    // Determine execution order if not already done
-    const executionOrder = determineExecutionOrder(nodess, edgess);
-    await setWorkflowState(workflowStateKey, { nodess, edgess, executionOrder, completedSteps });
+  // Check if the current step index is within the bounds of the nodes array
+  if (stepIndex < 0 || stepIndex >= nodes.length) {
+    return res.status(400).json({ error: "Invalid step index." });
   }
 
-  // Find the next step to execute based on the execution order and completed steps
-  const nextStepId = executionOrder.find(id => !completedSteps.includes(id));
+  const currentNode = nodes[stepIndex];
 
-  if (stepId !== nextStepId) {
-    // If the current step is not the expected next step, something went wrong
-    return res.status(400).json({ error: "Unexpected step order." });
+  // Execute the current step (this example assumes an HTTP request, adjust according to your step type)
+  try {
+    await executeHttpNode(currentNode); // Execute the current node's action
+    // Logic to mark the current step as completed, e.g., updating a database or in-memory store
+
+    // Check if there are more steps to execute
+    if (stepIndex + 1 < nodes.length) {
+      // If there are more steps, redirect to the next step
+      res.writeHead(307, { Location: `/api/step?stepIndex=${stepIndex + 1}` });
+      res.end();
+    } else {
+      // If all steps are completed
+      res.status(200).json({ message: "Workflow completed successfully." });
+    }
+  } catch (error) {
+    console.error(`Error executing step ${stepIndex}:`, error);
+    res.status(500).json({ error: `Error executing step ${stepIndex}` });
   }
-
-  // Execute the current step
-  const node = nodes.find(node => node.id === stepId);
-  await executeHttpNode(node);
-
-  // Mark the current step as completed
-  completedSteps.push(stepId);
-
-  // Check if there are more steps to execute
-  if (completedSteps.length < nodes.length) {
-    const nextStepId = executionOrder.find(id => !completedSteps.includes(id));
-    // Redirect to the next step
-    res.writeHead(307, { Location: `/api/step/${nextStepId}` });
-    res.end();
-  } else {
-    // Workflow completed
-    res.status(200).json({ message: "Workflow completed successfully." });
-  }
-
-  // Update the workflow state
-  await setWorkflowState(workflowStateKey, { nodes, edges, executionOrder, completedSteps });
 };
