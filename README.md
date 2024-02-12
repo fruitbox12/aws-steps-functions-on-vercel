@@ -1,5 +1,48 @@
 # Step Functions on Vercel
 ```
+[Webhook Trigger: New Survey Response]
+                |
+                v
+       +-----------------+
+       | Fetch Survey    |
+       | Response (HTTP_1)|
+       +-----------------+
+                |
+                v
+  +-------------+-------------+
+  | Categorize Response       |
+  +-------------+-------------+
+  |             |             |
+  v             v             v
++--------+   +--------+       +-------------+
+|Wishlist|   |Bugs    |       |Other        |
+|(HTTP_2)|   |(HTTP_3)|       |Categories...|
++----+       +--------+       +-------------+
+  |             |             |
+  |             |             |
+  |             +-------------+
+  |                           |
+  |                           v
+  |                  +----------------+
+  |                  | Generate       |
+  |                  | Insights       |
+  |                  | (OpenAI_0)     |
+  |                  +----------------+
+  |                           |
+  |                           v
+  |                  +----------------+        +----------------+
+  |                  | Append Insights|        | Compose        |
+  |                  | to AI Sheet    |        | Notification   |
+  |                  | (HTTP_4)       |        | Email (OpenAI_1)|
+  |                  +----------------+        +----------------+
+  |                                                    |
+  |                                                    v
+  |                                           +----------------+
+  +------------------------------------------>| Send Email     |
+                                              | (EmailSend_0)  |
+                                              +----------------+
+```
+```
                             [Scheduler]
                   (Cron: "0 */10 * * * *")
                 Triggers every 10 minutes
