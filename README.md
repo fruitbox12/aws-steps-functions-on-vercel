@@ -1,5 +1,50 @@
 # Step Functions on Vercel
 ```
+                          [Scheduler]
+                (Cron: "0 */10 * * * *")
+                      Triggers every 10 seconds
+                                 |
+                                 | (Cron job executes)
+                                 v
+                [Trigger] POST /api/step/0?stepIndex=2
+                                 |
+                                 v
+                      +-------------------+
+                      |   Step 0: Start   |
+                      | (/api/step/0)     |
+                      +---------+---------+
+                                |
+                                | (Initial step of the workflow)
+                                v
+                      +---------+---------+
+                      |       HTTP_0      |
+                      | (/api/step/1)     |
+                      +---------+---------+
+                                |
+                                | (GET request to GitHub API)
+                                v
+                      +---------+---------+
+                      |       If Else     |
+                      | (Decision based   |
+                      |  on HTTP_0 resp)  |
+                      +--+-------------+--+
+                         |             |
+             +-----------+             +-----------+
+             |                                     |
+      [true path]                          [false path]
+             |                                     |
+             v                                     v
+    +-------+-------+                     +-------+-------+
+    |     HTTP_1    |                     |     NodeJS    |
+    | (/api/step/2) |                     | (/api/step/3) |
+    +---------------+                     +---------------+
+          |                                     |
+          | (POST request to close issue)       | (Executes custom JS)
+          v                                     v
+    [Next Step or End of Workflow]   [Next Step or End of Workflow]
+
+```
+```
 Trigger() POST => /api/step/STEP_NUMBER?stepIndex=FINAL_STEP_NUMBER
 +----------------+      +---------------------+       +-------------------+
 |                |      |                     |       |                   |
