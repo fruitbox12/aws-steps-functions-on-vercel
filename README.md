@@ -33,6 +33,56 @@ Trigger() POST => /api/step/STEP_NUMBER?stepIndex=FINAL_STEP_NUMBER
     |               |                 |              |
     +---------------+                 +--------------+
 ```
+For Parallel Nodes:
+```
++----------------+      +---------------------+
+|                |      |                     |
+|  Parse Request |----->| Validate stepIndex  |
+|                |      |                     |
++----------------+      +---------------------+
+         |                       |
+         |                       |
+         |                       |
+         |             +-------------------------+
+         |             |                         |
+         |             |  Determine Parallel     |
+         |             |  Execution Paths       |
+         |             |                         |
+         |             +-------------------------+
+         |                       |
+         |                       |
+         |                       |
++----------------+      /-------------------------------\
+|                |      |         Parallel Execution    |
+|  Prepare       |----->|-------------------------------|-----------------------|
+|  Parallel      |      |  Execute HTTP Node 1  |  ...  |  Execute HTTP Node N  |
+|  Executions    |      |-----------------------|-------|-----------------------|
++----------------+      \-------------------------------/
+         |                       |
+         |                       |
+         |             +-------------------------+
+         |             |                         |
+         |             |  Synchronize and       |
+         |             |  Update Workflow State |
+         |             |                         |
+         |             +-------------------------+
+         |                       |
+         |                       |
+         |                       |
++----------------+      +---------------------+
+|                |      |                     |
+|  Check for     |<-----|  All Tasks          |
+|  More Steps    |      |  Completed          |
+|                |      |                     |
++----------------+      +---------------------+
+         |
++----------------+
+|                |
+|  Next Steps or |
+|  Complete      |
+|  Workflow      |
++----------------+
+```
 # Description
 The project allows for the dynamic execution of workflows, where each step can be an HTTP request to external services or internal logic. It's designed to showcase how complex workflows can be managed and executed in a serverless environment, providing a scalable and flexible solution for task orchestration.
 ```sh
