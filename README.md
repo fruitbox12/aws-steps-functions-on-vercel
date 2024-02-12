@@ -7,7 +7,7 @@ curl -X POST "https://aws-steps-functions-on-vercel-mauve.vercel.app/api/step/0?
      -d '{      
            "nodes": [      
                {            
-                   "id": 0,           
+                   "id": 0,            # first() =>    
                    "data": {                                        
                        "parameters": {    
                            "url": "https://swapi.dev/api/vehicles/",
@@ -16,7 +16,7 @@ curl -X POST "https://aws-steps-functions-on-vercel-mauve.vercel.app/api/step/0?
                    }       
                },           
                {
-                   "id": 1,           
+                   "id": 1,     # then() =>      
                    "data": {                                         
                        "parameters": {    
                            "url": "https://swapi.dev/api/people/1/",
@@ -24,7 +24,7 @@ curl -X POST "https://aws-steps-functions-on-vercel-mauve.vercel.app/api/step/0?
                        }
                    }
                },
-               {
+               {              # finally() =>                
                    "id": 2,
                    "data": {
                        "parameters": {
