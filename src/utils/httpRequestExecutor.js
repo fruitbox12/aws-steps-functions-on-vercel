@@ -1,20 +1,15 @@
-// utils/httpRequestExecutor.js
-import axios from 'axios';
-
-/**
- * Executes an HTTP request based on the provided node definition.
- * @param {Object} node - The node object containing the HTTP request definition.
- * @returns {Promise<Object>} The response data from the HTTP request.
- */
 export async function executeHttpNode(node) {
-    const { method, url } = node.data.parameters;
+    // Safely access parameters with a fallback to prevent TypeError
+    const { method, url } = node.data?.parameters || {};
+
+    // Check if method and url are defined
+    if (!method || !url) {
+        console.error(`Missing method or URL in node ${node.id}`);
+        throw new Error(`Missing method or URL in node ${node.id}`);
+    }
 
     try {
-        const response = await axios({
-            method,
-            url,
-           
-        });
+        const response = await axios({ method, url });
         console.log(`Node ${node.id} executed with result:`, response.data);
         return response.data;
     } catch (error) {
