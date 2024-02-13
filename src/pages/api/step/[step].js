@@ -7,7 +7,7 @@ export default async (req, res) => {
   const stepEnd = parseInt(stepEndString, 10);
   const { nodes } = req.body;
 if (stepIndex > 0) {
-console.log("works")
+console.log("works");
 }
   // Validate stepIndex and stepEnd
   if (stepIndex < 0 || stepIndex >= nodes.length || stepEnd < stepIndex || stepEnd >= nodes.length) {
@@ -24,15 +24,15 @@ console.log("works")
 
     // Execute the current node and add its result to the existing results
     const result = await executeHttpNode(nodes[stepIndex]);
-    existingResults.push({ nodeId: nodes[stepIndex].id, result });
+    existingResults.push({ nodeId: nodes[stepIndex].stepIndex, result });
 
     // Save the updated state
-    await setWorkflowState(nodes[stepIndex].id, existingResults,nodes[stepIndex].id+1);
+    await setWorkflowState(nodes[stepIndex].stepIndex, existingResults,nodes[stepIndex].stepIndex+1);
     // Redirect to the next step if not at the end
-    if (stepIndex < stepEnd) {
+    if (stepIndex < 1) {
       const nextStepIndex = stepIndex + 1;
       
-      res.writeHead(307, { Location: `/api/step/${nextStepIndex}?stepEnd=${stepEndString}` });
+      res.writeHead(307, { Location: `/api/step/${nextStepIndex}?stepEnd=${stepEnd}` });
       res.end();
     } else {
       // Last step: Return all results
@@ -43,9 +43,19 @@ console.log("works")
         const state = await getWorkflowState(nodes[i].id);
         log.push(state);
       }
+
+      const executions = log.map(state => ({
+        _id: null,
+        shortId: generateShortId('E'),
+        executionData: state,
+        state: "RUNNING",
+        workflowShortId: state.i,
+        createdDate: new Date(),
+        stoppedDate: new Date()
+      }));
+      
       res.status(200).json({
-        message: "Workflow completed successfully.",
-        results: log
+        executions
       });    }
   } catch (error) {
     console.error(`Error executing step ${stepIndex}:`, error);
