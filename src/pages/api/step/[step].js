@@ -48,7 +48,7 @@ console.log("works");
         _id: null,
         shortId: generateShortId('E'),
         executionData: state,
-        state: "RUNNING",
+        state: "COMPLETED",
         workflowShortId: state.i,
         createdDate: new Date(),
         stoppedDate: new Date()
