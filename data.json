@@ -1,0 +1,201 @@
+{
+  "nodes": [
+    {
+      "width": 112,
+      "height": 131,
+      "id": "http_0",
+      "position": {
+        "x": 504.5,
+        "y": 124
+      },
+      "type": "customNode",
+      "data": {
+        "label": "HTTP",
+        "name": "http",
+        "type": "action",
+        "inputAnchors": [
+          {
+            "id": "http_0-input-0"
+          }
+        ],
+        "outputAnchors": [
+          {
+            "id": "http_0-output-0"
+          }
+        ],
+        "selected": false,
+        "inputParameters": {
+          "url": "https://swapi.dev/api/planets/1/",
+          "headers": [
+          
+              
+          ],
+          "queryParams": [
+            {
+              "key": "",
+              "value": ""
+            }
+          ],
+          "bodyType": "json",
+"body": "",
+          "submit": null
+        },
+        "actions": {
+          "method": "GET",
+          "submit": null
+        },
+        "credentials": {
+          "credentialMethod": "noAuth",
+          "submit": null
+        }
+      },
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 504.5,
+        "y": 124
+      }
+    },
+    {
+      "width": 112,
+      "height": 131,
+      "id": "http_1",
+      "position": {
+        "x": 649.7033599037145,
+        "y": 82.36383817057393
+      },
+      "type": "customNode",
+      "data": {
+        "label": "HTTP_1",
+        "name": "http",
+        "type": "action",
+        "inputAnchors": [
+          {
+            "id": "http_1-input-0"
+          }
+        ],
+        "outputAnchors": [
+          {
+            "id": "http_1-output-0"
+          }
+        ],
+        "selected": false,
+        "inputParameters": {
+          "url": "https://swapi.dev/api/planets/1/",
+          "headers": [
+            {
+              "key": "",
+              "value": ""
+            }
+          ],
+          "queryParams": [
+            {
+              "key": "",
+              "value": ""
+            }
+          ],
+          "bodyType": "json",
+          "body": "",
+          "submit": null
+        },
+        "actions": {
+          "method": "GET",
+          "submit": null
+        },
+        "credentials": {
+          "credentialMethod": "httpBasicAuth",
+          "submit": null
+        }
+      },
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 649.7033599037145,
+        "y": 82.36383817057393
+      }
+    },
+    {
+      "id": "http_2",
+      "position": {
+        "x": 702.554157015147,
+        "y": 227.04288163685493
+      },
+      "type": "customNode",
+      "data": {
+        "label": "HTTP_2",
+        "name": "http",
+        "type": "action",
+        "inputAnchors": [
+          {
+            "id": "http_2-input-0"
+          }
+        ],
+        "outputAnchors": [
+          {
+            "id": "http_2-output-0"
+          }
+        ],
+        "selected": false,
+        "inputParameters": {
+          "url": "https://swapi.dev/api/planets/1/",
+          "headers": [
+            {
+              "key": "",
+              "value": ""
+            }
+          ],
+          "queryParams": [
+            {
+              "key": "",
+              "value": ""
+            }
+          ],
+          "bodyType": "json",
+          "body": "",
+          "responseType": "",
+          "submit": null
+        },
+        "actions": {
+          "method": "GET",
+          "submit": null
+        },
+        "credentials": {
+          "credentialMethod": "noAuth",
+          "submit": null
+        }
+      },
+      "width": 112,
+      "height": 131,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 702.554157015147,
+        "y": 227.04288163685493
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "http_0",
+      "sourceHandle": "http_0-output-0",
+      "target": "http_2",
+      "targetHandle": "http_2-input-0",
+      "type": "buttonedge",
+      "id": "http_0-http_0-output-0-http_2-http_2-input-0",
+      "data": {
+        "label": ""
+      }
+    },
+    {
+      "source": "http_0",
+      "sourceHandle": "http_0-output-0",
+      "target": "http_1",
+      "targetHandle": "http_1-input-0",
+      "type": "buttonedge",
+      "id": "http_0-http_0-output-0-http_1-http_1-input-0",
+      "data": {
+        "label": ""
+      }
+    }
+  ]
+}
