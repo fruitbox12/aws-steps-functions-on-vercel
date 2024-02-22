@@ -63,12 +63,12 @@ console.log("works");
        
       }));
       
-      res.status(200).json({
-        "data": [
-          executions
+      res.status(200).json(
+       
+          executions[0]
           
-        ]
-      }); }
+        
+      ); }
       
   } catch (error) {
     console.error(`Error executing step ${stepIndex}:`, error);
