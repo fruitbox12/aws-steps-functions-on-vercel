@@ -1,35 +1,81 @@
-// pages/api/step/[stepId].js
+import { executeHttpNode } from '../../../utils/httpRequestExecutor';
 import { getWorkflowState, setWorkflowState } from '../../../utils/kvStorage';
-import { executeHttpNode } from '../../../utils/httpRequestExecutor'; // Assume this executes an HTTP request for a node
-import { resolveNodeDependencies, determineExecutionOrder } from '../../../utils/workflowUtils';
-export default async (req, res) => {
-  // Assuming 'stepIndex' is passed as a query parameter indicating the current step's index (starting from 0)
-  const stepIndex = parseInt(req.query.stepIndex, 10);
-  const { nodes } = req.body; // Assuming 'nodes' are provided in the request body
+import NextCors from 'nextjs-cors';
 
-  // Check if the current step index is within the bounds of the nodes array
-  if (stepIndex < 0 || stepIndex >= nodes.length) {
-    return res.status(400).json({ error: "Invalid step index." });
+export default async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    await NextCors(req, res, {
+      // Options
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+      origin: '*',
+      optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+   });
+  const { step: stepString, stepEnd: stepEndString } = req.query;
+  const stepIndex = parseInt(stepString, 10);
+  const stepEnd = parseInt(stepEndString, 10);
+  
+  const { nodes } = req.body;
+  if (!nodes) {
+    return res.status(400).json({ error: "nodes array is missing in the request body" });
+  }
+  
+if (stepIndex > 0) {
+console.log("works");
+}
+  // Validate stepIndex and stepEnd
+  if (stepIndex < 0 || stepIndex >= nodes.length || stepEnd < stepIndex || stepEnd >= nodes.length) {
+    return res.status(400).json({ error: "Invalid step or stepEnd index." });
   }
 
-  const currentNode = nodes[stepIndex];
-
-  // Execute the current step (this example assumes an HTTP request, adjust according to your step type)
   try {
-    await executeHttpNode(currentNode); // Execute the current node's action
-    // Logic to mark the current step as completed, e.g., updating a database or in-memory store
+    // Retrieve existing results from storage or initialize as an empty array
+    const workflowId = generateShortId('E');
+    let existingResults = await getWorkflowState(nodes[stepIndex].stepIndex) || [];
+    if (!Array.isArray(existingResults)) {
+      existingResults = [];
+    }
 
-    // Check if there are more steps to execute
-    if (stepIndex + 1 < nodes.length) {
-      // If there are more steps, redirect to the next step
-      res.writeHead(307, { Location: `/api/step?stepIndex=${stepIndex + 1}` });
+    // Execute the current node and add its result to the existing results
+    const result = await executeHttpNode(nodes[stepIndex]);
+    existingResults.push({ result });
+
+    // Save the updated state
+    await setWorkflowState(nodes[stepIndex].stepIndex, existingResults,nodes[stepIndex].stepIndex+1);
+    // Redirect to the next step if not at the end
+    if (stepIndex < 1) {
+      const nextStepIndex = stepIndex + 1;
+      
+      res.writeHead(307, { Location: `/api/step/${nextStepIndex}?stepEnd=${stepEnd}` });
       res.end();
     } else {
-      // If all steps are completed
-      res.status(200).json({ message: "Workflow completed successfully." });
-    }
+      // Last step: Return all results
+      const log = [];
+    
+      // Retrieve workflow state for each node and add it to the log array
+      for (let i = 0; i <= stepIndex; i++) {
+        const state = await getWorkflowState(nodes[i].i);
+        log.push(state);
+      }
+
+      const executions = log.map(state => ({
+      
+        data: state,
+       
+      }));
+      
+      res.status(200).json(
+       
+          executions[0]
+          
+        
+      ); }
+      
   } catch (error) {
     console.error(`Error executing step ${stepIndex}:`, error);
     res.status(500).json({ error: `Error executing step ${stepIndex}` });
   }
 };
+
+function generateShortId(prefix) {
+  return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+}
