@@ -7,7 +7,7 @@ const AUTH_HEADER = { Authorization: `Bearer Ab6VASQgZmYxOTk0ZjUtN2JlNS00MDJjLTh
 export async function getWorkflowState(key) {
   try {
     const response = await axios.get(`${KV_STORAGE_BASE_URL}/get/${key}`, { headers: AUTH_HEADER });
-    return typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+    return typeof response.data === 'string' ? JSON.parse(response.data) : (Array.isArray(response.data) ? response.data : []);
   } catch (error) {
     console.error('Error getting workflow state:', error);
     return {};
