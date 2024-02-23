@@ -1,9 +1,7 @@
-// Assuming this is in your routes/api/step.js or similar
-// this might break
 import { executeHttpNode } from '../../../utils/httpRequestExecutor';
 import { getWorkflowState, setWorkflowState } from '../../../utils/kvStorage';
 import NextCors from 'nextjs-cors';
-import { registerCron } from '../../../utils/cronUtils'; // Make sure to import the utility
+import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
 
 export default async (req, res) => {
     await NextCors(req, res, {
@@ -26,29 +24,28 @@ export default async (req, res) => {
     }
 
     try {
-        let existingResults = await getWorkflowState('workflowId') || []; // Ensure you have a valid key for state retrieval
+        let existingResults = await getWorkflowState('workflowId') || [];
+        if (!Array.isArray(existingResults)) {
+            existingResults = [];
+        }
 
-        // Check if the current node is a scheduler trigger and register the cron job
         if (nodes[stepIndex].data.type === 'trigger') {
+            // Assuming registerCron function returns some result or confirmation
             const cronResult = await registerCron(nodes[stepIndex]);
             existingResults.push({ cronResult });
         } else {
-            // Execute the current node and add its result to the existing results
             const result = await executeHttpNode(nodes[stepIndex]);
             existingResults.push({ result });
         }
 
-        // Save the updated state
-        await setWorkflowState('workflowId', existingResults); // Ensure you have a valid key for state saving
+        await setWorkflowState('workflowId', existingResults);
 
-        // Redirect to the next step if not at the end
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
             res.writeHead(307, { Location: `/api/step/${nextStepIndex}?stepEnd=${stepEnd}` });
             res.end();
         } else {
-            // Last step: Return all results
-            res.status(200).json(existingResults);
+            res.status(200).json({ results: existingResults });
         }
     } catch (error) {
         console.error(`Error executing step ${stepIndex}:`, error);
