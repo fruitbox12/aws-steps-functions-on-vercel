@@ -45,7 +45,7 @@ export default async (req, res) => {
             res.writeHead(307, { Location: `/api/step/${nextStepIndex}?stepEnd=${stepEnd}` });
             res.end();
         } else {
-res.status(200).json({ root: existingResults });
+res.status(200).json({ data: existingResults });
         }
     } catch (error) {
         console.error(`Error executing step ${stepIndex}:`, error);
