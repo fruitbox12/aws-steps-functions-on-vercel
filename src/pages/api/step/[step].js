@@ -29,14 +29,21 @@ export default async (req, res) => {
             existingResults = [];
         }
 
-        if (nodes[stepIndex].data.type === 'trigger') {
-            // Assuming registerCron function returns some result or confirmation
-            const cronResult = await registerCron(nodes[stepIndex]);
-            existingResults.push({ cronResult });
-        } else {
-            const result = await executeHttpNode(nodes[stepIndex]);
-            existingResults.push({ result });
-        }
+try {
+    if (nodes[stepIndex].data.type === 'trigger') {
+        // Assuming registerCron function returns some result or confirmation
+        const cronResult = await registerCron(nodes[stepIndex]);
+        existingResults.push({ cronResult });
+    } else {
+        const result = await executeHttpNode(nodes[stepIndex]);
+        existingResults.push({ result });
+    }
+} catch (error) {
+    // Log the error to the console
+    console.error(`Error executing: ${error}`);
+    // Push the error message or error object to existingResults for later processing
+    existingResults.push({ error: error.message || 'Unknown error' });
+}
 
         await setWorkflowState('workflowId', existingResults);
 
@@ -49,7 +56,7 @@ res.status(200).json({ data: existingResults });
         }
     } catch (error) {
         console.error(`Error executing step ${stepIndex}:`, error);
-        res.status(500).json({ error: `Error executing step ${stepIndex}` });
+        res.status(204).json({ error: `Error executing step ${stepIndex}` });
     }
 };
 
