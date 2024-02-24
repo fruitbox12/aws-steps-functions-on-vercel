@@ -19,8 +19,8 @@ export default async (req, res) => {
         return res.status(400).json({ error: "nodes array is missing in the request body" });
     }
 
-    if (stepIndex < 0 || stepIndex >= nodes.length || stepEnd < stepIndex || stepEnd >= nodes.length) {
-        return res.status(400).json({ error: "Invalid step or stepEnd index." });
+    if (stepIndex < 0  /* || stepIndex >= nodes.length || stepEnd < stepIndex || stepEnd >= nodes.length */) {
+        return res.status(204).json({ error: "Invalid step or stepEnd index." });
     }
 
     try {
