@@ -23,7 +23,7 @@ if (stepIndex > 0) {
 console.log("works");
 }
   // Validate stepIndex and stepEnd
-  if (stepIndex < 0 || stepIndex >= nodes.length || stepEnd < stepIndex || stepEnd >= nodes.length) {
+  if (stepIndex < 0  /*|| stepIndex >= nodes.length || stepEnd < stepIndex || stepEnd >= nodes.length */) {
     return res.status(400).json({ error: "Invalid step or stepEnd index." });
   }
 
