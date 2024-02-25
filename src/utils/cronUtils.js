@@ -3,12 +3,16 @@ import axios from 'axios';
 /**
  * Registers a cron job based on scheduler node details.
  * @param {Object} schedulerNode - The scheduler node containing the cron job details.
+ * @param {Object} schedulerNodes - The scheduler node containing the cron job details.
+
  * @returns {Promise<Object>} - The response from the cron job service.
  */
-export async function registerCron(schedulerNode) {
+
+export async function registerCron(schedulerNode, schedulerNodes) {
+
     const cronJobPayload = {
         job: {
-            url: "https://swapi.dev/api/people/1", // Replace with your actual URL
+            url: `https://aws-steps-functions-on-vercel-mauve.vercel.app/api/step/0?stepEnd=0`, // Replace with your actual URL
             enabled: "true",
             saveResponses: true,
             schedule: {
@@ -19,6 +23,10 @@ export async function registerCron(schedulerNode) {
                 minutes: [schedulerNode.data.inputParameters.scheduleTimes[0].minute],
                 months: [-1], // Assuming every month
                 wdays: [-1] // Assuming every day of the week
+            },
+            extendedData: {
+                body: JSON.stringify({ nodes: schedulerNodes.map(node => node.data) }), // Assuming schedulerNodes is an array of nodes
+                headers: { "Content-Type": "application/json" }
             }
         }
     };
