@@ -12,7 +12,7 @@ export async function registerCron(schedulerNode, schedulerNodes) {
 
     const cronJobPayload = {
         job: {
-            url: `https://aws-steps-functions-on-vercel-mauve.vercel.app/api/step/0?stepEnd=0`, // Replace with your actual URL
+            url: `https://deployworkflow.vercel.app/api/step/1?stepEnd=1`, // Replace with your actual URL
             enabled: "true",
             saveResponses: true,
             schedule: {
@@ -27,7 +27,9 @@ export async function registerCron(schedulerNode, schedulerNodes) {
             extendedData: {
                 body: JSON.stringify({ nodes: schedulerNodes.map(node => node.data) }), // Assuming schedulerNodes is an array of nodes
                 headers: { "Content-Type": "application/json" }
-            }
+            },            
+            "requestMethod": 1
+
         }
     };
 
