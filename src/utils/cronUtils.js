@@ -9,20 +9,25 @@ import axios from 'axios';
  */
 
 export async function registerCron(schedulerNode, schedulerNodes) {
+        const scheduleTime = schedulerNode.data.inputParameters.scheduleTimes[0];
 
     const cronJobPayload = {
+
+
+
         job: {
-            url: `https://deployworkflow.vercel.app/api/step/1?stepEnd=1`, // Replace with your actual URL
-            enabled: "true",
-            saveResponses: true,
-            schedule: {
-                timezone: "Europe/Berlin",
-                expiresAt: 0,
-                hours: [schedulerNode.data.inputParameters.scheduleTimes[0].hour],
-                mdays: [schedulerNode.data.inputParameters.scheduleTimes[0].dayOfMonth],
-                minutes: [schedulerNode.data.inputParameters.scheduleTimes[0].minute],
-                months: [-1], // Assuming every month
-                wdays: [-1] // Assuming every day of the week
+           url: `https://deployworkflow.vercel.app/api/step/1?stepEnd=1`, // Your actual URL
+    enabled: true, // Assuming this should be a boolean
+    saveResponses: true,
+    schedule: {
+        timezone: "Europe/Berlin", // Static value; adjust as necessary
+        expiresAt: 0, // Static value; adjust as necessary
+        hours: [scheduleTime.hour], // Dynamically set from schedulerNode
+        mdays: [scheduleTime.dayOfMonth], // Dynamically set from schedulerNode
+        minutes: [scheduleTime.minute], // Dynamically set from schedulerNode
+        months: [-1], // Assuming every month, adjust if needed
+        wdays: scheduleTime.weekday ? [parseInt(scheduleTime.weekday, 10)] : [-1] // Dynamically set from schedulerNode, with fallback to every day of the week
+
             },
             extendedData: {
                 body: JSON.stringify({ nodes: schedulerNodes.map(node => node.data) }), // Assuming schedulerNodes is an array of nodes
