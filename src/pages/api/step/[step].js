@@ -15,6 +15,7 @@ export default async (req, res) => {
     const stepIndex = parseInt(stepString, 10);
     const stepEnd = parseInt(stepEndString, 10);
     const { nodes } = req.body;
+    const { shortId } = req.parameters;
 
     if (!nodes) {
         return res.status(400).json({ error: "nodes array is missing in the request body" });
@@ -75,7 +76,7 @@ const db = client.db(dbName);
             _id: null, // This will be set by your database
             executionData:  JSON.stringify([{nodeId:  nodes[stepIndex].id, nodeLabel: nodes[stepIndex].data.label, data: existingResults, status: "FINISHED"}]) , // Populate as necessary
             state: "SUCCESS", // Or "SUCCESS" or "FAILED" based on your logic
-            workflowShortId: "W23FEB24-BFR7RK4Q",
+            workflowShortId: shortId,
             shortId: shortId,
             // Passed in the request body
             createdDate: new Date(),
@@ -87,7 +88,7 @@ const db = client.db(dbName);
         await executionRepository.insertOne(execution);
 
         // Retrieve updated execution data for the workflow
-        const executionData = await executionRepository.find({ workflowShortId: "W23FEB24-BFR7RK4Q" }).toArray();
+        const executionData = await executionRepository.find({ workflowShortId: shortId }).toArray();
 console.log(executionData)
         // Assuming 'workflow' is already defined or retrieved from the database
  
