@@ -14,7 +14,7 @@ export default async (req, res) => {
     const { step: stepString, stepEnd: stepEndString } = req.query;
     const stepIndex = parseInt(stepString, 10);
     const stepEnd = parseInt(stepEndString, 10);
-    const { nodes, shortId } = req.body;
+    const { nodes, shortId, tenantId } = req.body;
 
     if (!nodes) {
         return res.status(400).json({ error: "nodes array is missing in the request body" });
@@ -68,7 +68,6 @@ await client.connect();
 const db = client.db(dbName);
 
         // Generate a shortId for the execution
-        const shortId = generateShortId('E');
 
         // New execution object
         let execution = {
@@ -83,7 +82,7 @@ const db = client.db(dbName);
         };
 
         // Insert the new execution into the database
-        const executionRepository = db.collection('execution_dylanwong007@gmail.com');
+        const executionRepository = db.collection(`execution_${tenantId}`);
         await executionRepository.insertOne(execution);
 
         // Retrieve updated execution data for the workflow
