@@ -1,3 +1,24 @@
+### Key Components:
+
+-   Middleware Configuration: Uses `NextCors` to set up Cross-Origin Resource Sharing (CORS), allowing requests from any origin.
+-   Input Validation: Ensures the request contains necessary data and validates indexes to prevent errors.
+-   Workflow Execution:
+    -   Cron Jobs: If a node is a trigger, it schedules a cron job.
+    -   Webhooks: If a node is a webhook, it registers the webhook accordingly.
+    -   HTTP Requests: Other nodes trigger HTTP requests. The results or errors from these operations are stored.
+-   State Management: Utilizes custom utilities (`getWorkflowState`, `setWorkflowState`) to save and retrieve the current state of the workflow from a key-value store.
+-   MongoDB Integration: At the end of processing, connects to MongoDB to log the execution results for future reference.
+
+### Process Flow:
+
+1.  Validates the incoming request and the current step to be executed.
+2.  Depending on the node type (`trigger`, `webhook`, or other), performs the appropriate action (e.g., setting up a cron job or making an HTTP request).
+3.  Updates the workflow's state in a key-value store with any new results or errors.
+4.  If there are more steps, redirects to the next step; otherwise, it finalizes the process by recording the execution details in a MongoDB collection.
+5.  Returns a response with the execution results or an error message.
+
+The script demonstrates how to orchestrate various operations in a workflow, emphasizing asynchronous execution, error handling, and state persistence.
+
 # Step Functions on Vercel
 ```
 [Webhook Trigger: New Survey Response]
