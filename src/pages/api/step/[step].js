@@ -2,6 +2,8 @@ import { executeHttpNode } from '../../../utils/httpRequestExecutor';
 import { getWorkflowState, setWorkflowState } from '../../../utils/kvStorage';
 import NextCors from 'nextjs-cors';
 import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
+import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
+
 const { MongoClient } = require('mongodb');
 
 export default async (req, res) => {
@@ -43,7 +45,7 @@ try {
     } else {
         if (nodes[0].data.type === 'webhook') {
 
-        const data = await executeHttpNode(nodes[stepIndex], trigger_output);
+        const data = await webhookHttpNode(nodes[stepIndex], trigger_output);
         existingResults.push({ data });
 
         }
