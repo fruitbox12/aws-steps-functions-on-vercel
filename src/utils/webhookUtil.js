@@ -3,7 +3,7 @@ function replacePlaceholders(text, webhookOutput) {
     return text.replace(/\{\{(\w+)\}\}/g, (match, key) => webhookOutput[key] ?? match);
 }
 
-export async function executeHttpNode(node, webhook_output = null) {
+export async function webhookHttpNode(node, webhook_output = null) {
     // Ensure webhook_output is an object
     const webhookOutput = typeof webhook_output === 'object' ? webhook_output : {};
 
