@@ -43,16 +43,11 @@ try {
         const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
         
     } else {
-        if (nodes[0].data.type === 'webhook') {
-
-        const data = await webhookHttpNode(nodes[stepIndex], trigger_output);
-        existingResults.push({ data });
-
-        }
-        else {
+        
+       
         const data = await webhookHttpNode(nodes[stepIndex], existingResults);
         existingResults.push({ data });
-        }
+ 
     }
 } catch (error) {
     // Log the error to the console
