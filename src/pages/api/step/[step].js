@@ -50,7 +50,7 @@ try {
 
         }
         else {
-        const data = await executeHttpNode(nodes[stepIndex]);
+        const data = await webhookHttpNode(nodes[stepIndex], existingResults);
         existingResults.push({ data });
         }
     }
