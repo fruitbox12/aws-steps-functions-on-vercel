@@ -14,7 +14,7 @@ export default async (req, res) => {
     const { step: stepString, stepEnd: stepEndString } = req.query;
     const stepIndex = parseInt(stepString, 10);
     const stepEnd = parseInt(stepEndString, 10);
-    const { nodes, shortId, tenantId } = req.body;
+    const { nodes, shortId, tenantId, trigger_output = {} } = req.body;
 
     if (!nodes) {
         return res.status(400).json({ error: "nodes array is missing in the request body" });
@@ -41,8 +41,16 @@ try {
         const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
         
     } else {
+        if (nodes[0].data.type === 'webhook') {
+
+        const data = await executeHttpNode(nodes[stepIndex], trigger_output);
+        existingResults.push({ data });
+
+        }
+        else {
         const data = await executeHttpNode(nodes[stepIndex]);
         existingResults.push({ data });
+        }
     }
 } catch (error) {
     // Log the error to the console
