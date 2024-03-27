@@ -1,11 +1,10 @@
 import axios from 'axios';
 function resolvePath(path, obj) {
-    return path.split(/[\.\[\]\'\"]/).filter(p => p).reduce((res, key) => res[key], obj);
+    return path.split(/[\.\[\]\'\"]/).filter(p => p).reduce((res, key) => res !== undefined ? res[key] : undefined, obj);
 }
 
 function replacePlaceholders(text, webhookOutput) {
-    const placeholderPattern = /\{\{([\w\.\[\]\'\"]+)\}\}/g;
-    return text.replace(placeholderPattern, (match, path) => {
+    return text.replace(/\{\{([\w\.\[\]\'\"]+)\}\}/g, (match, path) => {
         const resolvedValue = resolvePath(path, webhookOutput);
         return resolvedValue !== undefined ? resolvedValue : match;
     });
