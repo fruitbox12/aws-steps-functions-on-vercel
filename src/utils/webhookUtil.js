@@ -2,14 +2,17 @@ import axios from 'axios';
 
 function replaceUrlPlaceholder(currentNode, nodes, output) {
     // Find the current node based on its ID
-    let urlString = currentNode.data.inputParameters.url;
-    const placeholderPattern = /\{\{(.*?)\}\}/g;
 
-    urlString = urlString.replace(placeholderPattern, (match, p1) => {
+let url = currentNode.data.inputParameters.url;
+let parts = url.split("{{");
+let extractedString = "{{" + parts[1];
+ // This would log "{{http_0[0].data.usage.prompt_tokens}}"
+
+    urlString = url.replace(extractedString, (match, p1) => {
         // p1 contains the placeholder content without the braces
         const parts = p1.split(/[\[\].]+/); // Splits by brackets or dots
         const referencedNodeId = parts.shift(); // Extracts the node ID
-        const referencedNodeOutput = output.find(node => node.nodeId === referencedNodeId);
+        const referencedNodeOutput = output.find(nodes => node.nodeId === referencedNodeId);
 
         if (!referencedNodeOutput) {
             console.error(`Referenced node output for ${referencedNodeId} not found.`);
