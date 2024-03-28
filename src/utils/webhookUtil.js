@@ -8,7 +8,7 @@ let parts = url.split("{{");
 let extractedString = "{{" + parts[1];
  // This would log "{{http_0[0].data.usage.prompt_tokens}}"
 
-    urlString = url.replace(extractedString, (match, p1) => {
+   const urlString = url.replace(extractedString, (match, p1) => {
         // p1 contains the placeholder content without the braces
         const parts = p1.split(/[\[\].]+/); // Splits by brackets or dots
         const referencedNodeId = parts.shift(); // Extracts the node ID
