@@ -2,37 +2,41 @@ import axios from 'axios';
 
 function replaceUrlPlaceholder(currentNode, nodes, output) {
   let url = currentNode.data.inputParameters.url;
-  // Assuming the placeholder format is "{{nodeId.data.path.to.value}}"
+  // Match placeholders in the URL
   let placeholderPattern = /\{\{([^}]+)\}\}/g;
-  
-  const urlString = url.replace(placeholderPattern, (match, path) => {
-    // Split the path into parts: [nodeId, "data", ...]
-    const parts = path.split('.');
-    const referencedNodeId = parts.shift(); // Extracts the node ID
-    const referencedNodeOutput = nodes.find(node => node.nodeId === referencedNodeId);
+  let urlString = url.replace(placeholderPattern, (match, nodeIdPath) => {
+    // Extract node ID and path from the placeholder
+    let [nodeId, ...pathParts] = nodeIdPath.split('.');
+    
+    // Find the corresponding node output using nodeId
+    const nodeOutput = output.find(o => {
+      // Assuming node output data structure includes nodeId for matching
+      let node = nodes.find(n => n.nodeId === nodeId);
+      return node && o.data.id === node.data.id;
+    });
 
-
-    if (!referencedNodeOutput) {
-      console.error(`Referenced node output for ${referencedNodeId} not found.`);
-      return match; // Return the original placeholder if the node is not found in the output
+    if (!nodeOutput) {
+      console.error(`Output for nodeId ${nodeId} not found.`);
+      return match;
     }
 
-    // Navigate through the referencedNodeOutput's data based on the remaining parts
-    let value = referencedNodeOutput.data; // Assuming data is directly under the node output
-    for (const part of parts) {
-      if (value && typeof value === 'object' && value[part] !== undefined) {
+    // Navigate through the nodeOutput data based on pathParts
+    let value = nodeOutput.data;
+    for (const part of pathParts) {
+      if (value && typeof value === 'object' && part in value) {
         value = value[part];
       } else {
-        console.error(`Failed to resolve ${part} in output for ${referencedNodeId}`);
-        return match; // Return the original placeholder if any part of the path cannot be resolved
+        console.error(`Failed to resolve path ${pathParts.join('.')} in output for nodeId ${nodeId}`);
+        return match;
       }
     }
 
-    return value || match; // Replace the placeholder with the value, if found; otherwise, keep the placeholder
+    return value.toString() || match;
   });
 
   return urlString;
 }
+
 
 // Note: This function assumes a very specific structure for the placeholders and the output array.
 // Depending on the complexity and variability of your placeholders and data structures,
