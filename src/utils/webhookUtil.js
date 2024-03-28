@@ -28,7 +28,7 @@ function replacePlaceholders(text, nodes, webhookOutput) {
 }
 
 
-export async function webhookHttpNode(node, nodes, webhook_output = null) {
+export async function webhookHttpNode(node, nodes, webhook_output) {
     const webhookOutput = typeof webhook_output === 'object' ? webhook_output : {};
     const method = node.data?.actions?.method?.toLowerCase();
     
