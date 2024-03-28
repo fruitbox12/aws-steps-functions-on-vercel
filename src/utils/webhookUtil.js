@@ -45,7 +45,7 @@ export async function webhookHttpNode(node, nodes, output) {
     const method = node.data?.actions?.method?.toLowerCase();
     // asssume url contains    https://swapi.dev/api/people/{{http_0[0].data.usage.completion_tokens}}
 
-    const url = await replacePlaceholderInUrl(node, nodes,output) || node.data?.inputParameters?.url;
+    const url = await replaceUrlPlaceholder(node, nodes,output) || node.data?.inputParameters?.url;
     const headersArray = node.data?.inputParameters?.headers || [];
     const headers = headersArray.reduce((acc, header) => {
         if (header.key && header.value) acc[header.key] = header.value;
