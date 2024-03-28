@@ -27,7 +27,7 @@ export default async (req, res) => {
     }
 
     try {
-        let existingResults = await getWorkflowState('workflowId') || [];
+        let existingResults = await getWorkflowState(shortId) || [];
         if (!Array.isArray(existingResults)) {
             existingResults = [];
         }
@@ -44,7 +44,7 @@ try {
         
     } else {
         
-       
+    
         const data = await webhookHttpNode(nodes[stepIndex], existingResults[existingResults.length - 1]);
         existingResults.push({ data });
  
@@ -56,7 +56,7 @@ try {
     existingResults.push({ error: error.message || 'Unknown error' });
 }
 
-        await setWorkflowState('workflowId', existingResults);
+        await setWorkflowState(shortId, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
