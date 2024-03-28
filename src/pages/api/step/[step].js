@@ -44,8 +44,8 @@ try {
         
     } else {
         
-    
-        const data = await webhookHttpNode(nodes[stepIndex], existingResults[existingResults.length - 1]);
+
+        const data = await webhookHttpNode(nodes[stepIndex], existingResults);
         existingResults.push({ data });
  
     }
