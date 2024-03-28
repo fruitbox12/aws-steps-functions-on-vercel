@@ -44,42 +44,8 @@ try {
         
     } else {
 
-        const test = [
-  {
-    "nodeId": "http_0",
-    "nodeLabel": "HTTP",
-    "data": [
-      {
-        "data": {
-          "id": "chatcmpl-97YsHZJgQzn4tiyTiMZAVA43T4OGL",
-          "object": "chat.completion",
-          "created": 1711589381,
-          "model": "gpt-3.5-turbo-0125",
-          "choices": [
-            {
-              "index": 0,
-              "message": {
-                "role": "assistant",
-                "content": "13"
-              },
-              "logprobs": null,
-              "finish_reason": "stop"
-            }
-          ],
-          "usage": {
-            "prompt_tokens": 10,
-            "completion_tokens": 1,
-            "total_tokens": 11
-          },
-          "system_fingerprint": "fp_3bc1b5746c"
-        }
-      }
-    ],
-    "status": "FINISHED"
-  }
-]
+              const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
 
-        const data = await webhookHttpNode(nodes[stepIndex], nodes, test);
         existingResults.push({ data });
  
     }
