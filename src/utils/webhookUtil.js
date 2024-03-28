@@ -1,50 +1,52 @@
 import axios from 'axios';
 
-async function replacePlaceholdersWithTestData(node, testData) {
-  let urlString = node.data?.inputParameters?.url; // Access the URL that might contain placeholders
-  const startPlaceholder = "{{";
-  const endPlaceholder = "}}";
+async function replacePlaceholderInUrl(urlString, testData) {
+    const startPlaceholder = "{{";
+    const endPlaceholder = "}}";
 
-  let startIndex = urlString.indexOf(startPlaceholder);
-  while (startIndex !== -1) {
-    const endIndex = urlString.indexOf(endPlaceholder, startIndex);
-    if (endIndex === -1) {
-      break; // No closing "}}" found; exit loop
+    let startIndex = urlString.indexOf(startPlaceholder);
+    while (startIndex !== -1) {
+        const endIndex = urlString.indexOf(endPlaceholder, startIndex);
+        if (endIndex === -1) {
+            break; // No closing "}}" found; exit loop
+        }
+
+        // Extract the key path from the placeholder
+        const keyPath = urlString.substring(startIndex + startPlaceholder.length, endIndex).trim().split(/[.[\]]/).filter(Boolean);
+        
+        // Find the corresponding test data based on the nodeId
+        const nodeId = keyPath.shift(); // The first part of the keyPath is the nodeId
+        let node = testData.find(item => item.nodeId === nodeId);
+        
+        if (!node) {
+            console.error(`Node with nodeId ${nodeId} not found.`);
+            break;
+        }
+        
+        // Navigate through the data based on the remaining key path
+        let value = node.data[0]; // Starting point based on your structure
+        for (const key of keyPath) {
+            if (value && typeof value === 'object') {
+                value = value[key];
+            } else {
+                console.error(`Could not resolve path: ${keyPath.join('.')}`);
+                value = null;
+                break;
+            }
+        }
+
+        // Replace the placeholder with the value if found
+        if (value !== null) {
+            urlString = urlString.slice(0, startIndex) + value + urlString.slice(endIndex + endPlaceholder.length);
+            startIndex = urlString.indexOf(startPlaceholder, startIndex + value.toString().length);
+        } else {
+            console.error(`Placeholder {{${keyPath.join('.')}}} could not be replaced because the key path does not exist.`);
+            startIndex = urlString.indexOf(startPlaceholder, endIndex + endPlaceholder.length);
+        }
     }
 
-    // Extract placeholder content, excluding "{{" and "}}"
-    const placeholderContent = urlString.substring(startIndex + startPlaceholder.length, endIndex).trim();
-    const keyPath = placeholderContent.split('.');
-
-    // Initialize `value` to point to the start of your `testData` structure
-    let value = testData;
-    for (let i = 0; i < keyPath.length; i++) {
-      if (value[keyPath[i]] !== undefined) {
-        value = value[keyPath[i]];
-      } else {
-        // Key not found; log an error or handle as needed
-        console.error(`Key not found: ${keyPath[i]}`);
-        value = null;
-        break;
-      }
-    }
-
-    // If a valid value was found, replace the placeholder in the URL with this value
-    if (value !== null) {
-      urlString = urlString.slice(0, startIndex) + value + urlString.slice(endIndex + endPlaceholder.length);
-      // Update startIndex for the next iteration to search for the next placeholder
-      startIndex = urlString.indexOf(startPlaceholder, startIndex + value.toString().length);
-    } else {
-      console.error(`Placeholder {{${placeholderContent}}} could not be replaced because the key path does not exist.`);
-      // Move past this placeholder to continue searching
-      startIndex = urlString.indexOf(startPlaceholder, endIndex + endPlaceholder.length);
-    }
-  }
-
-  console.log(urlString); // For demonstration
-  return urlString; // Return the processed URL
+    return urlString; // Return the processed URL
 }
-
 
 // Note: This function assumes a very specific structure for the placeholders and the output array.
 // Depending on the complexity and variability of your placeholders and data structures,
