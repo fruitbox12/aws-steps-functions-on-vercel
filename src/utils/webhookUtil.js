@@ -7,7 +7,7 @@ async function replacePlaceholdersWithTestData(node, testData) {
     const matches = urlString.match(placeholderPattern);
 
     // http_0[0].data.usage.completion_tokens
-    var keyPath = match.split('.'); // Splits the key into parts by dot notation
+    var keyPath = matches.split('.'); // Splits the key into parts by dot notation
     keyPath.shift()
     testData = testData['data'][0];
     var value;
