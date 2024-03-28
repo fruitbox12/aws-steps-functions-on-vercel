@@ -1,42 +1,35 @@
 import axios from 'axios';
 
 function replaceUrlPlaceholder(currentNode, nodes, output) {
-    // Find the current node based on its ID
+  let url = currentNode.data.inputParameters.url;
+  // Assuming the placeholder format is "{{nodeId.data.path.to.value}}"
+  let placeholderPattern = /\{\{([^}]+)\}\}/g;
+  
+  const urlString = url.replace(placeholderPattern, (match, path) => {
+    // Split the path into parts: [nodeId, "data", ...]
+    const parts = path.split('.');
+    const referencedNodeId = parts.shift(); // Extracts the node ID
+    const referencedNodeOutput = output.find(node => node.nodeId === referencedNodeId);
 
-let url = currentNode.data.inputParameters.url;
-let parts = url.split("{{");
-let extractedString = "{{" + parts[1];
- // This would log "{{http_0[0].data.usage.prompt_tokens}}"
+    if (!referencedNodeOutput) {
+      console.error(`Referenced node output for ${referencedNodeId} not found.`);
+      return match; // Return the original placeholder if the node is not found in the output
+    }
 
-   const urlString = url.replace(extractedString, (match, p1) => {
-        // p1 contains the placeholder content without the braces
-        const parts = p1.split(/[\[\].]+/); // Splits by brackets or dots
-        const referencedNodeId = parts.shift(); // Extracts the node ID
-        const referencedNodeOutput = output.find(nodes => node.nodeId === referencedNodeId);
+    // Navigate through the referencedNodeOutput's data based on the remaining parts
+    let value = referencedNodeOutput.data; // Assuming data is directly under the node output
+    for (const part of parts) {
+      if (value && typeof value === 'object' && value[part] !== undefined) {
+        value = value[part];
+      } else {
+        console.error(`Failed to resolve ${part} in output for ${referencedNodeId}`);
+        return match; // Return the original placeholder if any part of the path cannot be resolved
+      }
+    }
 
-        if (!referencedNodeOutput) {
-            console.error(`Referenced node output for ${referencedNodeId} not found.`);
-            return match; // Return the original placeholder if the node is not found in the output
-        }
+    return value || match; // Replace the placeholder with the value, if found; otherwise, keep the placeholder
+  });
 
-        // Navigate through the referencedNodeOutput's data based on the remaining parts
-        let value = referencedNodeOutput;
-        for (const part of parts) {
-            if (value && typeof value === 'object') {
-                value = value.data; // Adjust according to your output data structure
-                for (const subPart of part.split(/\[|\]/).filter(Boolean)) { // Further split for array access
-                    value = value[subPart];
-                }
-            } else {
-                console.error(`Failed to resolve ${part} in output for ${referencedNodeId}`);
-                return match; // Return the original placeholder if any part of the path cannot be resolved
-            }
-        }
-
-        return value || match; // Replace the placeholder with the value, if found; otherwise, keep the placeholder
-    });
-
-    // Update the current node's URL with the new urlString (where placeholders have been replaced)
   return urlString;
 }
 
