@@ -1,47 +1,37 @@
 import axios from 'axios';
 
-function replaceUrlPlaceholderInNode(node, nodes) {
+function replaceUrlPlaceholder(currentNode, nodes, output) {
     // Find the current node based on its ID
-    const currentNode = nodes.find(node => node.id === currentNodeId);
-    if (!currentNode) {
-        console.error('Current node not found');
-        return;
-    }
-
     let urlString = currentNode.data.inputParameters.url;
     const placeholderPattern = /\{\{(.*?)\}\}/g;
 
-    let match;
-    while ((match = placeholderPattern.exec(urlString))) {
-        const placeholderFull = match[0]; // The full placeholder including {{ and }}
-        const placeholderParts = match[1].split(/[\[\].]+/); // Extracts nodeId and the path
+    urlString = urlString.replace(placeholderPattern, (match, p1) => {
+        // p1 contains the placeholder content without the braces
+        const parts = p1.split(/[\[\].]+/); // Splits by brackets or dots
+        const referencedNodeId = parts.shift(); // Extracts the node ID
+        const referencedNodeOutput = output.find(node => node.nodeId === referencedNodeId);
 
-        const referencedNodeId = placeholderParts[0]; // The ID of the node referred by the placeholder
-        const referencedNode = nodes.find(node => node.id === referencedNodeId);
-
-        if (!referencedNode) {
-            console.error(`Referenced node ${referencedNodeId} not found.`);
-            continue;
+        if (!referencedNodeOutput) {
+            console.error(`Referenced node output for ${referencedNodeId} not found.`);
+            return match; // Return the original placeholder if the node is not found in the output
         }
 
-        // Assume the value to replace is directly under data object as per your structure
-        // Adjust the path navigation as necessary based on your actual data structure
-        let value = referencedNode.data;
-        for (let i = 1; i < placeholderParts.length; i++) { // Start from 1 to skip the nodeId part
-            const key = placeholderParts[i];
-            if (value[key] !== undefined) {
-                value = value[key];
+        // Navigate through the referencedNodeOutput's data based on the remaining parts
+        let value = referencedNodeOutput;
+        for (const part of parts) {
+            if (value && typeof value === 'object') {
+                value = value.data; // Adjust according to your output data structure
+                for (const subPart of part.split(/\[|\]/).filter(Boolean)) { // Further split for array access
+                    value = value[subPart];
+                }
             } else {
-                console.error(`Path not found: ${placeholderParts.slice(i).join('.')}`);
-                value = null;
-                break;
+                console.error(`Failed to resolve ${part} in output for ${referencedNodeId}`);
+                return match; // Return the original placeholder if any part of the path cannot be resolved
             }
         }
 
-        if (value !== null) {
-            urlString = urlString.replace(placeholderFull, value);
-        }
-    }
+        return value || match; // Replace the placeholder with the value, if found; otherwise, keep the placeholder
+    });
 
     // Update the current node's URL with the new urlString (where placeholders have been replaced)
   return urlString;
