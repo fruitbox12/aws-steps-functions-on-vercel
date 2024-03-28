@@ -4,43 +4,20 @@ async function replacePlaceholdersWithTestData(node, testData) {
     const placeholderPattern = /\{\{([^}]+)\}\}/g;
     let urlString = node.data?.inputParameters?.url; // Access the URL that might contain placeholders
 
-    const matches = [...urlString.matchAll(placeholderPattern)];
+    const matches = urlString.match(placeholderPattern);
 
-    for (const match of matches) {
-        const placeholder = match[0];
-        const keyPath = match[1].split('.'); // Splits the key into parts by dot notation
-
-        // Find the corresponding test data based on nodeId
-        const nodeId = keyPath[0];
-        const targetData = testData.find(d => d.nodeId === nodeId);
-
-        if (!targetData) {
-            console.warn(`No data found for nodeId: ${nodeId}`);
-            continue; // Skip if no matching data is found
-        }
-
-        // Attempt to resolve the value from the nested data structure
-        let resolvedValue = targetData;
-        for (const key of keyPath.slice(1)) { // Skip the nodeId part since it's already used
-            if (resolvedValue && typeof resolvedValue === 'object') {
-                resolvedValue = resolvedValue[key];
-            } else {
-                // Cannot resolve further, might be an invalid key path
-                resolvedValue = null;
-                break;
-            }
-        }
-
-        if (resolvedValue !== null && resolvedValue !== undefined) {
-            urlString = urlString.replace(placeholder, resolvedValue);
-        } else {
-            console.warn(`Could not resolve value for placeholder: ${placeholder}`);
-        }
+    // http_0[0].data.usage.completion_tokens
+    var keyPath = match.split('.'); // Splits the key into parts by dot notation
+    keyPath.shift()
+    testData = testData['data'][0];
+    var value;
+    for (var prop in keyPath) {
+        value = testData[prop];
     }
-
-    // Here, urlString should have all its placeholders replaced
-    console.log(urlString); // For demonstration
-    return urlString; // Return the processed URL
+    var newUrl = urlString.replace(matches, '');
+    newUrl = newUrl + value;
+    console.log(newUrl); // For demonstration
+    return newUrl; // Return the processed URL
 }
 
 // Note: This function assumes a very specific structure for the placeholders and the output array.
