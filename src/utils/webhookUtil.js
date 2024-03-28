@@ -4,63 +4,58 @@ function resolvePath(path, obj) {
     return path.split(/[\.\[\]\'\"]/).filter(p => p).reduce((res, key) => res !== undefined ? res[key] : undefined, obj);
 }
 
+function getPlaceholderValue(placeholder, nodes, webhookOutput) {
+    // Attempt to resolve from webhookOutput first
+    if (webhookOutput && webhookOutput.hasOwnProperty(placeholder)) {
+        return webhookOutput[placeholder];
+    }
+
+    // Find in nodes if not found in webhookOutput
+    const nodeId = placeholder.split('.')[0];
+    const propertyPath = placeholder.split('.').slice(1).join('.');
+
+    const node = nodes.find(n => n.id === nodeId);
+    if (node && node.data) {
+        try {
+            // Directly access the property if possible
+            return eval(`node.data.${propertyPath}`);
+        } catch (e) {
+            console.error(`Error accessing property ${propertyPath} in node ${nodeId}:`, e);
+        }
+    }
+
+    return null; // Return null if unresolved
+}
+
 function replacePlaceholders(text, nodes, webhookOutput) {
     return text.replace(/\{\{([\w\.\[\]\'\"]+)\}\}/g, (match, path) => {
-        console.log("Attempting to resolve path:", path); // Debugging line
-        let resolvedValue = resolvePath(path, webhookOutput);
-
-        if (resolvedValue === undefined) {
-            const nodeIdMatch = path.match(/^(\w+)/);
-            if (nodeIdMatch) {
-                const nodeId = nodeIdMatch[1];
-                const node = nodes.find(n => n.id === nodeId);
-                if (node) {
-                    console.log(`Found node for ${nodeId}:`, node); // Debugging line
-                    const newPath = path.replace(`${nodeId}.`, '');
-                    resolvedValue = resolvePath(newPath, node.data);
-                    console.log(`Resolved value for ${newPath}:`, resolvedValue); // Debugging line
-                } else {
-                    console.log(`Node not found for ID: ${nodeId}`); // Debugging line
-                }
-            }
-        }
-
-        return resolvedValue !== undefined ? resolvedValue : match;
+        const placeholderValue = getPlaceholderValue(path, nodes, webhookOutput);
+        return placeholderValue !== null ? placeholderValue : match;
     });
 }
 
 
 
-export async function webhookHttpNode(node, nodes, webhook_output) {
-    const webhookOutput = typeof webhook_output === 'object' ? webhook_output : {};
+export async function webhookHttpNode(node, nodes, webhook_output = {}) {
     const method = node.data?.actions?.method?.toLowerCase();
-    
-    // Updated to pass nodes to replacePlaceholders
-    const url = replacePlaceholders(node.data?.inputParameters?.url, nodes, webhookOutput);
-    const headersArray = node.data?.inputParameters?.headers || [];
-    const headers = headersArray.reduce((acc, header) => {
-        if (header.key && header.value) {
-            acc[header.key] = replacePlaceholders(header.value, nodes, webhookOutput); // Updated here as well
-        }
-        return acc;
-    }, {});
+    const url = replacePlaceholders(node.data?.inputParameters?.url, nodes, webhook_output);
+    const headers = {}; // Initialize headers object
+
+    // Process headers
+    node.data?.inputParameters?.headers.forEach(header => {
+        headers[header.key] = replacePlaceholders(header.value, nodes, webhook_output);
+    });
 
     let data = {};
-    try {
-        if (['post', 'put'].includes(method)) {
-            const bodyWithPlaceholders = node.data?.inputParameters?.body || '{}';
-            const bodyWithReplacements = replacePlaceholders(bodyWithPlaceholders, nodes, webhookOutput); // And here
-            data = JSON.parse(bodyWithReplacements);
-        }
-    } catch (error) {
-        console.error(`Error parsing JSON body for node ${node.id}:`, error);
-        throw error;
+    if (['post', 'put'].includes(method)) {
+        // Assuming body is a JSON string with potential placeholders
+        const bodyWithPlaceholders = node.data?.inputParameters?.body || '{}';
+        const processedBody = replacePlaceholders(bodyWithPlaceholders, nodes, webhook_output);
+        data = JSON.parse(processedBody);
     }
 
-    const axiosConfig = { method, url, headers, data };
-
     try {
-        const response = await axios(axiosConfig);
+        const response = await axios({ method, url, headers, data });
         console.log(`Node ${node.id} executed with result:`, response.data);
         return response.data;
     } catch (error) {
