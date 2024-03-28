@@ -1,24 +1,50 @@
 import axios from 'axios';
 
 async function replacePlaceholdersWithTestData(node, testData) {
-const placeholderPattern = new RegExp("\\{\\{([^}]+)\\}\\}", "g");
-    const urlString = node.data?.inputParameters?.url; // Access the URL that might contain placeholders
+  let urlString = node.data?.inputParameters?.url; // Access the URL that might contain placeholders
+  const startPlaceholder = "{{";
+  const endPlaceholder = "}}";
 
-    const matches = urlString.match(placeholderPattern);
-
-    // http_0[0].data.usage.completion_tokens
-    var keyPath = matches.split('.'); // Splits the key into parts by dot notation
-    keyPath.shift()
-    testData = testData['data'][0];
-    var value = '';
-    for (var prop in keyPath) {
-        value = testData[prop];
+  let startIndex = urlString.indexOf(startPlaceholder);
+  while (startIndex !== -1) {
+    const endIndex = urlString.indexOf(endPlaceholder, startIndex);
+    if (endIndex === -1) {
+      break; // No closing "}}" found; exit loop
     }
-    var newUrl = urlString.replace(matches, '');
-    newUrl = newUrl + value;
-    console.log(newUrl); // For demonstration
-    return newUrl; // Return the processed URL
+
+    // Extract placeholder content, excluding "{{" and "}}"
+    const placeholderContent = urlString.substring(startIndex + startPlaceholder.length, endIndex).trim();
+    const keyPath = placeholderContent.split('.');
+
+    // Initialize `value` to point to the start of your `testData` structure
+    let value = testData;
+    for (let i = 0; i < keyPath.length; i++) {
+      if (value[keyPath[i]] !== undefined) {
+        value = value[keyPath[i]];
+      } else {
+        // Key not found; log an error or handle as needed
+        console.error(`Key not found: ${keyPath[i]}`);
+        value = null;
+        break;
+      }
+    }
+
+    // If a valid value was found, replace the placeholder in the URL with this value
+    if (value !== null) {
+      urlString = urlString.slice(0, startIndex) + value + urlString.slice(endIndex + endPlaceholder.length);
+      // Update startIndex for the next iteration to search for the next placeholder
+      startIndex = urlString.indexOf(startPlaceholder, startIndex + value.toString().length);
+    } else {
+      console.error(`Placeholder {{${placeholderContent}}} could not be replaced because the key path does not exist.`);
+      // Move past this placeholder to continue searching
+      startIndex = urlString.indexOf(startPlaceholder, endIndex + endPlaceholder.length);
+    }
+  }
+
+  console.log(urlString); // For demonstration
+  return urlString; // Return the processed URL
 }
+
 
 // Note: This function assumes a very specific structure for the placeholders and the output array.
 // Depending on the complexity and variability of your placeholders and data structures,
