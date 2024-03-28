@@ -1,10 +1,17 @@
 import axios from 'axios';
 
-async function replacePlaceholderInUrl(urlString, testData) {
-    const startPlaceholder = "{{";
-    const endPlaceholder = "}}";
+async function replacePlaceholderInUrl(node, testData) {
+  // Ensure urlString is a string.
+  let urlString = node.data?.inputParameters?.url;
+  if (typeof urlString !== 'string') {
+    console.error('urlString is not a string:', urlString);
+    return urlString; // Return the original input or handle this case as appropriate.
+  }
 
-    let startIndex = urlString.indexOf(startPlaceholder);
+  const startPlaceholder = "{{";
+  const endPlaceholder = "}}";
+
+  let startIndex = urlString.indexOf(startPlaceholder);
     while (startIndex !== -1) {
         const endIndex = urlString.indexOf(endPlaceholder, startIndex);
         if (endIndex === -1) {
