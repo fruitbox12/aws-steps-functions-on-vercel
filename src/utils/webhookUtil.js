@@ -2,7 +2,7 @@ import axios from 'axios';
 
 async function replacePlaceholdersWithTestData(node, testData) {
     const placeholderPattern = //\{\{([^}]+)\}\}/g/;
-    var urlString = node.data?.inputParameters?.url; // Access the URL that might contain placeholders
+    const urlString = node.data?.inputParameters?.url; // Access the URL that might contain placeholders
 
     const matches = urlString.match(placeholderPattern);
 
@@ -10,7 +10,7 @@ async function replacePlaceholdersWithTestData(node, testData) {
     var keyPath = matches.split('.'); // Splits the key into parts by dot notation
     keyPath.shift()
     testData = testData['data'][0];
-    var value;
+    var value = '';
     for (var prop in keyPath) {
         value = testData[prop];
     }
