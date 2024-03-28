@@ -6,19 +6,21 @@ function resolvePath(path, obj) {
 
 function replacePlaceholders(text, nodes, webhookOutput) {
     return text.replace(/\{\{([\w\.\[\]\'\"]+)\}\}/g, (match, path) => {
-        // Attempt to directly resolve against webhookOutput first
+        console.log("Attempting to resolve path:", path); // Debugging line
         let resolvedValue = resolvePath(path, webhookOutput);
 
-        // If not resolved, check against nodes
         if (resolvedValue === undefined) {
             const nodeIdMatch = path.match(/^(\w+)/);
             if (nodeIdMatch) {
                 const nodeId = nodeIdMatch[1];
                 const node = nodes.find(n => n.id === nodeId);
                 if (node) {
-                    // Adjusted path to skip nodeId when resolving within the node's data
+                    console.log(`Found node for ${nodeId}:`, node); // Debugging line
                     const newPath = path.replace(`${nodeId}.`, '');
                     resolvedValue = resolvePath(newPath, node.data);
+                    console.log(`Resolved value for ${newPath}:`, resolvedValue); // Debugging line
+                } else {
+                    console.log(`Node not found for ID: ${nodeId}`); // Debugging line
                 }
             }
         }
@@ -26,6 +28,7 @@ function replacePlaceholders(text, nodes, webhookOutput) {
         return resolvedValue !== undefined ? resolvedValue : match;
     });
 }
+
 
 
 export async function webhookHttpNode(node, nodes, webhook_output) {
