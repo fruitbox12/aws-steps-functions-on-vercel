@@ -9,7 +9,8 @@ function replaceUrlPlaceholder(currentNode, nodes, output) {
     // Split the path into parts: [nodeId, "data", ...]
     const parts = path.split('.');
     const referencedNodeId = parts.shift(); // Extracts the node ID
-    const referencedNodeOutput = output.find(node => node.nodeId === referencedNodeId);
+    const referencedNodeOutput = nodes.find(node => node.nodeId === referencedNodeId);
+
 
     if (!referencedNodeOutput) {
       console.error(`Referenced node output for ${referencedNodeId} not found.`);
