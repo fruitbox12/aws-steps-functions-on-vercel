@@ -6,21 +6,19 @@ function resolvePath(path, obj) {
 
 function replacePlaceholders(text, nodes, webhookOutput) {
     return text.replace(/\{\{([\w\.\[\]\'\"]+)\}\}/g, (match, path) => {
-        // First, try to resolve the path against the webhookOutput
+        // Attempt to directly resolve against webhookOutput first
         let resolvedValue = resolvePath(path, webhookOutput);
 
-        // If unresolved, check if the path is intended to reference other nodes
+        // If not resolved, check against nodes
         if (resolvedValue === undefined) {
-            const pathParts = path.match(/(\w+)/g); // Simplistic split by word characters to interpret path segments
-            if (pathParts && pathParts.length > 0) {
-                const nodeId = pathParts[0];
-                const nodeDataPath = pathParts.slice(1).join('.'); // Re-join the remaining parts as the path within the node's data
-
-                // Find the referenced node by id
-                const referencedNode = nodes.find(node => node.id === nodeId);
-                if (referencedNode) {
-                    // Attempt to resolve the path within the referenced node's data
-                    resolvedValue = resolvePath(nodeDataPath, referencedNode.data);
+            const nodeIdMatch = path.match(/^(\w+)/);
+            if (nodeIdMatch) {
+                const nodeId = nodeIdMatch[1];
+                const node = nodes.find(n => n.id === nodeId);
+                if (node) {
+                    // Adjusted path to skip nodeId when resolving within the node's data
+                    const newPath = path.replace(`${nodeId}.`, '');
+                    resolvedValue = resolvePath(newPath, node.data);
                 }
             }
         }
@@ -28,6 +26,7 @@ function replacePlaceholders(text, nodes, webhookOutput) {
         return resolvedValue !== undefined ? resolvedValue : match;
     });
 }
+
 
 export async function webhookHttpNode(node, nodes, webhook_output = null) {
     const webhookOutput = typeof webhook_output === 'object' ? webhook_output : {};
