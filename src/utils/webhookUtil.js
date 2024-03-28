@@ -2,7 +2,7 @@ import axios from 'axios';
 
 async function replacePlaceholdersWithTestData(node, testData) {
     const placeholderPattern = //\{\{([^}]+)\}\}/g/;
-    let urlString = node.data?.inputParameters?.url; // Access the URL that might contain placeholders
+    var urlString = node.data?.inputParameters?.url; // Access the URL that might contain placeholders
 
     const matches = urlString.match(placeholderPattern);
 
