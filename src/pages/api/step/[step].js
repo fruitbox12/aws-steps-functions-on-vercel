@@ -79,7 +79,7 @@ try {
   }
 ]
 
-        const data = await webhookHttpNode(nodes[stepIndex], test);
+        const data = await webhookHttpNode(nodes[stepIndex], nodes, test);
         existingResults.push({ data });
  
     }
