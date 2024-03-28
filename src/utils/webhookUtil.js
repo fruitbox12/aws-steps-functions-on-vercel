@@ -34,8 +34,6 @@ function replacePlaceholders(text, nodes, webhookOutput) {
     });
 }
 
-
-
 export async function webhookHttpNode(node, nodes, webhook_output = {}) {
     const method = node.data?.actions?.method?.toLowerCase();
     const url = replacePlaceholders(node.data?.inputParameters?.url, nodes, webhook_output);
@@ -43,7 +41,11 @@ export async function webhookHttpNode(node, nodes, webhook_output = {}) {
 
     // Process headers
     node.data?.inputParameters?.headers.forEach(header => {
-        headers[header.key] = replacePlaceholders(header.value, nodes, webhook_output);
+        const key = replacePlaceholders(header.key, nodes, webhook_output);
+        const value = replacePlaceholders(header.value, nodes, webhook_output);
+        if (key.trim() !== '') { // Check if key is not empty after placeholder replacement
+            headers[key] = value;
+        }
     });
 
     let data = {};
