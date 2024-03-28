@@ -1,71 +1,104 @@
 import axios from 'axios';
 
-function resolvePath(path, obj) {
-    return path.split(/[\.\[\]\'\"]/).filter(p => p).reduce((res, key) => res !== undefined ? res[key] : undefined, obj);
-}
-function getWebhookOutputValue(placeholder, webhookOutput) {
-    const path = placeholder.split('.');
-    let value = webhookOutput;
-    for (const key of path) {
-        if (value && value.hasOwnProperty(key)) {
-            value = value[key];
-        } else {
-            value = undefined;
-            break;
+async function replacePlaceholdersWithTestData(node, output) {
+    const placeholderPattern = /\{\{([^}]+)\}\}/g;
+    let urlString = node.data?.inputParameters?.url; // Access the URL that might contain placeholders
+
+    const matches = [...urlString.matchAll(placeholderPattern)];
+
+    for (const match of matches) {
+        const placeholder = match[0];
+        const keyPath = match[1].split('.'); // Splits the key into parts by dot notation
+
+        // Find the corresponding test data based on nodeId
+        const nodeId = keyPath[0];
+        const targetData = testData.find(d => d.nodeId === nodeId);
+
+        if (!targetData) {
+            console.warn(`No data found for nodeId: ${nodeId}`);
+            continue; // Skip if no matching data is found
         }
-    }
-    return value;
-}
 
-function replacePlaceholders(text, currentNode, allNodes, webhookOutput) {
-    return text.replace(/\{\{([\w.\[\]']+)\}\}/g, (match, path) => {
-        let resolvedValue = resolvePath(path, webhookOutput);
-
-        if (resolvedValue === undefined) {
-            const nodeIdMatch = path.match(/^(\w+)/);
-            if (nodeIdMatch) {
-                const nodeId = nodeIdMatch[1];
-                const node = allNodes.find(n => n.id === nodeId);
-                if (node) {
-                    const newPath = path.replace(`${nodeId}.`, '');
-                    resolvedValue = resolvePath(newPath, node.data);
-                }
+        // Attempt to resolve the value from the nested data structure
+        let resolvedValue = targetData;
+        for (const key of keyPath.slice(1)) { // Skip the nodeId part since it's already used
+            if (resolvedValue && typeof resolvedValue === 'object') {
+                resolvedValue = resolvedValue[key];
+            } else {
+                // Cannot resolve further, might be an invalid key path
+                resolvedValue = null;
+                break;
             }
         }
 
-        // Use getWebhookOutputValue to resolve placeholders in webhookOutput
-        if (resolvedValue === undefined && webhookOutput) {
-            resolvedValue = getWebhookOutputValue(path, webhookOutput);
+        if (resolvedValue !== null && resolvedValue !== undefined) {
+            urlString = urlString.replace(placeholder, resolvedValue);
+        } else {
+            console.warn(`Could not resolve value for placeholder: ${placeholder}`);
         }
-
-        return resolvedValue !== undefined ? resolvedValue : match;
-    });
-}
-
-export async function webhookHttpNode(node, allNodes, webhook_output = {}) {
-    const method = node.data?.actions?.method?.toLowerCase();
-    const url = replacePlaceholders(node.data?.inputParameters?.url, node, allNodes, webhook_output);
-    const headers = {};
-
-    // Process headers
-    node.data?.inputParameters?.headers.forEach(header => {
-        const key = replacePlaceholders(header.key, node, allNodes, webhook_output);
-        const value = replacePlaceholders(header.value, node, allNodes, webhook_output);
-        if (key.trim() !== '') { // Check if key is not empty after placeholder replacement
-            headers[key] = value;
-        }
-    });
-
-    let data = {};
-    if (['post', 'put'].includes(method)) {
-        const bodyWithPlaceholders = node.data?.inputParameters?.body || '{}';
-        const processedBody = replacePlaceholders(bodyWithPlaceholders, node, allNodes, webhook_output);
-        data = JSON.parse(processedBody);
     }
 
+    // Here, urlString should have all its placeholders replaced
+    console.log(urlString); // For demonstration
+    return urlString; // Return the processed URL
+}
+
+// Note: This function assumes a very specific structure for the placeholders and the output array.
+// Depending on the complexity and variability of your placeholders and data structures,
+// you might need a more sophisticated parser or processor.
+
+export async function webhookHttpNode(node, output) {
+    const method = node.data?.actions?.method?.toLowerCase();
+    // asssume url contains    https://swapi.dev/api/people/{{http_0[0].data.usage.completion_tokens}}
+
+    const url = replacePlaceholdersWithTestData(node, output);
+    const headersArray = node.data?.inputParameters?.headers || [];
+    const headers = headersArray.reduce((acc, header) => {
+        if (header.key && header.value) acc[header.key] = header.value;
+        return acc;
+    }, {});
+
+    let data;
     try {
-        const response = await axios({ method, url, headers, data });
+        data = (method === 'post' || method === 'put') ? JSON.parse(node.data?.inputParameters?.body || '{}') : undefined;
+    } catch (error) {
+        console.error(`Error parsing JSON body for node ${node.id}:`, error);
+    }
+
+    const axiosConfig = {
+        method,
+        url,
+        headers,
+        data
+    };
+
+    try {
+        const response = await axios(axiosConfig);
         console.log(`Node ${node.id} executed with result:`, response.data);
+
+        // Initialize a variable to hold the extracted content
+        let extractedContent = "";
+
+        // Check if the response includes 'choices' and has at least one choice
+        if (response.data.choices && response.data.choices.length > 0) {
+            const firstChoice = response.data.choices[0];
+
+            // Assuming 'content' is directly on the choice object
+            if (firstChoice.content) {
+                console.log(`Content from the result:`, firstChoice.content);
+                extractedContent = firstChoice.content;
+            } else if (firstChoice.message && typeof firstChoice.message === 'object' && firstChoice.message.content) {
+                // If 'content' is nested within a 'message' object
+                console.log(`Content from the result:`, firstChoice.message.content);
+                extractedContent = firstChoice.message.content;
+            } else {
+                console.log(`No content or unexpected format in the first choice.`);
+            }
+        } else {
+            console.log(`No choices available in the response.`);
+        }
+
+        // Return or process the extracted content as needed
         return response.data;
     } catch (error) {
         console.error(`Error executing HTTP node ${node.id}:`, error);
