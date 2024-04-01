@@ -43,7 +43,7 @@ try {
     else if (nodes[stepIndex].data.type === 'webhook') {
         const registerWebhook = await nodes[stepIndex]("webhook_" + shortId, nodes[stepIndex])
         
-    } else {     else if (nodes[stepIndex] > 1) {
+    } else {     if (nodes[stepIndex] > 1) {
 const workflowState = await getWorkflowState(shortId);
                 const lastStateIndex = workflowState.length - 1;
         const lastState = workflowState[lastStateIndex];
