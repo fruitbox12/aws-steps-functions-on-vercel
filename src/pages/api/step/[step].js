@@ -57,10 +57,7 @@ const options = {
     sort: { 'created': -1 }, // Ensure documents are sorted by 'created' in descending order
     projection: { 'http_0': 1, _id: 0 }  // Specifically project the 'http_0' field
 };
-
-const lastState = await executionRepository.findOne({ 'http_0': { $exists: true } }, options);
-
-       
+  const lastState = await executionRepository.find({ 'http_0' }).toArray();
       
  
 
@@ -69,13 +66,14 @@ const lastState = await executionRepository.findOne({ 'http_0': { $exists: true 
         // If the structure of lastState does not directly match what replaceTemplateVariables expects,
         // you may need to adjust this part.
         const updatedInputParameters = replaceTemplateVariables(
-            nodes[nodeIndex].data.inputParameters.url,
-            lastState
+            nodes[nodeIndex].inputParameters.url,
+           lastState[lastState.length - 1]
         );
 
         // Update the node's input parameters with the replaced values
-        nodes[nodeIndex].data.inputParameters.url = updatedInputParameters;
+        nodes[nodeIndex].inputParameters.url = updatedInputParameters;
         const data = await executeHttpNode(nodes[stepIndex]);
+    
  
 // Then, push the constructed object to the array
 existingResults.push({ data: data });
