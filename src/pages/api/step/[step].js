@@ -88,8 +88,12 @@ const documentToInsert = {
 
 // Insert the document into the collection
 await executionRepository.insertOne(documentToInsert);
-        existingResults.push({ nodes[stepIndex].id: [ { data: data } ]});
- 
+ const objectToAdd = {
+  [nodes[stepIndex].id]: [{ data: data }]
+};
+
+// Then, push the constructed object to the array
+existingResults.push(objectToAdd);
     }
 } catch (error) {
     // Log the error to the console
