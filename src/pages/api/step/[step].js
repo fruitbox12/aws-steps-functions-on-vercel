@@ -66,12 +66,12 @@ const lastState = await executionRepository.findOne({ 'http_0': { $exists: true 
         // If the structure of lastState does not directly match what replaceTemplateVariables expects,
         // you may need to adjust this part.
         const updatedInputParameters = replaceTemplateVariables(
-            nodes[nodeIndex].inputParameters.url,
+            nodes[nodeIndex].data.inputParameters.url,
            lastState[lastState.length - 1]
         );
 
         // Update the node's input parameters with the replaced values
-        nodes[nodeIndex].inputParameters.url = updatedInputParameters;
+        nodes[nodeIndex].data.inputParameters.url = updatedInputParameters;
         const data = await executeHttpNode(nodes[stepIndex]);
     
  
