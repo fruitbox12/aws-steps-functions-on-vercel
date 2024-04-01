@@ -52,8 +52,8 @@ await client.connect();
 
 const db = client.db(dbName);
   const executionRepository = db.collection(`exec_${tenantId}`);
-        await executionRepository.insertOne(data);
-        existingResults.push({ data });
+        await executionRepository.insertOne({ data: data });
+        existingResults.push({ data: data });
  
     }
 } catch (error) {
