@@ -56,12 +56,12 @@ const db = client.db(dbName);
 const documentId = generateShortId(nodes[stepIndex].id);
 const nodeId = nodes[stepIndex].id;
 const nodeData = {
-    [nodeId]: { data: data }
+    
 };
 // Construct the document to insert, including the custom _id and the dynamic key data
 const documentToInsert = {
   _id: documentId,
-  ...nodeData
+  [nodeId]: { data: data }
 };
 
 // Insert the document into the collection
