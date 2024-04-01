@@ -45,7 +45,6 @@ try {
         
     } else {     if (nodes[stepIndex] > 1) {
 
-          const data = await executeHttpNode(nodes[stepIndex]);
             const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
 const dbName = 'test';
 const client = new MongoClient(url);
@@ -61,15 +60,8 @@ const options = {
 
         const lastState = await executionRepository.findOne({}, options);
       
-        const options = {
-    sort: { 'created': -1 },
-    projection: { [nodes[stepIndex - 1].id]: 1, _id: 0 }  // Dynamically project the required field
-};
+ 
 
-consconst options = {
-    sort: { 'created': -1 },
-    projection: { [nodes[stepIndex - 1].id]: 1, _id: 0 }  // Dynamically project the required field
-};
 
         // Assuming the last state can be directly used for template variable replacement
         // If the structure of lastState does not directly match what replaceTemplateVariables expects,
@@ -85,7 +77,6 @@ consconst options = {
          const objectToAdd = {
   [nodes[stepIndex].id]: [{ data: data }]
 };
-await client.close();
 
 // Then, push the constructed object to the array
 existingResults.push(objectToAdd);
