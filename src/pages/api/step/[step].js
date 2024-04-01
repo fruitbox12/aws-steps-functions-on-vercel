@@ -58,7 +58,7 @@ const options = {
     projection: { [nodes[stepIndex - 1].id]: 1, _id: 0 }  // Dynamically project the required field
 };
 
-cons
+
         const lastState = await executionRepository.findOne({}, options);
       
         const options = {
@@ -71,7 +71,6 @@ consconst options = {
     projection: { [nodes[stepIndex - 1].id]: 1, _id: 0 }  // Dynamically project the required field
 };
 
-cons
         // Assuming the last state can be directly used for template variable replacement
         // If the structure of lastState does not directly match what replaceTemplateVariables expects,
         // you may need to adjust this part.
@@ -86,6 +85,7 @@ cons
          const objectToAdd = {
   [nodes[stepIndex].id]: [{ data: data }]
 };
+await client.close();
 
 // Then, push the constructed object to the array
 existingResults.push(objectToAdd);
