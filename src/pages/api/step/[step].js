@@ -56,7 +56,7 @@ const db = client.db(dbName);
 const documentId = generateShortId(nodes[stepIndex].id);
 const nodeId = nodes[stepIndex].id;
 const nodeData = {
-    [nodeId]: { data: data }
+    [nodeId]: [ {data: data} ]
 };
 
 // Construct the document to insert, including the custom _id and the wrapped node data
