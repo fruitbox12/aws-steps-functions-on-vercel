@@ -45,7 +45,7 @@ try {
         
     } else {     if (nodes[stepIndex] > 1) {
 const urlTemplate = "https://swapi.dev/api/people/{{http_0[0].data.usage.prompt_tokens}}";
-const data = {
+const datas = {
     http_0: [
         {
             data: {
@@ -57,7 +57,7 @@ const data = {
     ]
 };
 
-const replacedUrl = replaceTemplateVariables(urlTemplate, data);
+const replacedUrl = replaceTemplateVariables(urlTemplate, datas;
 
         // Update the node's input parameters with the replaced values
         nodes[nodeIndex].data.inputParameters.url = replacedUrl;
