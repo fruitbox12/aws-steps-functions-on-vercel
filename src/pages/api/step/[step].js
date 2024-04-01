@@ -60,7 +60,7 @@ const datas = {
 const replacedUrl = replaceTemplateVariables(urlTemplate, datas);
 
         // Update the node's input parameters with the replaced values
-        nodes[nodeIndex].data.inputParameters.url = replacedUrl;
+        nodes[nodeIndex].inputParameters.url = replacedUrl;
         const data = await executeHttpNode(nodes[stepIndex]);
     
  
