@@ -6,93 +6,6 @@ import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this u
 
 const { MongoClient } = require('mongodb');
 
-async function getPreviousStepOutput(nodeId) {
-    const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
-    const dbName = 'test';
-    const client = new MongoClient(url);
-    await client.connect();
-
-    const db = client.db(dbName);
-    const executionRepository = db.collection(`exec_${tenantId}`);
-
-    // Fetch the most recent execution output for the given nodeId
-    const previousOutput = await executionRepository.findOne({ nodeId }, { sort: { _id: -1 } });
-
-    await client.close();
-
-    return previousOutput ? previousOutput.data : null;
-}
-
-async function executeCurrentStepWithReplacedVariables(node, stepIndex) {
-    const previousNodeId = stepIndex > 0 ? nodes[stepIndex - 1].id : null;
-    let previousOutputData = null;
-
-    if (previousNodeId !== null) {
-        previousOutputData = await getPreviousStepOutput(previousNodeId);
-    }
-
-    // Assuming a function that replaces template variables in your node parameters
-    // with data from previousOutputData. Implementation depends on your template format.
-    replaceTemplateVariables(node, previousOutputData);
-
-    const data = await executeHttpNode(node);
-
-    // Store the current node's output
-    const client = new MongoClient(url);
-    await client.connect();
-    const db = client.db(dbName);
-    const executionRepository = db.collection(`exec_${tenantId}`);
-    await executionRepository.insertOne({ nodeId: node.id, data, timestamp: new Date() });
-    await client.close();
-
-    existingResults.push({ data });
-}
-
-// Example usage
-// Ensure nodes, stepIndex, and tenantId are defined and available
-async function replaceTemplateVariablesAndExecute(nodeIndex) {
-    const node = nodes[nodeIndex];
-    let inputParameters = node.data.inputParameters;
-
-    // Regular expression to match template variables
-    const templateVariableRegex = /\{\{([^\}]+)\}\}/g;
-    let match;
-
-    // Replace template variables in URL
-    while ((match = templateVariableRegex.exec(inputParameters.url)) !== null) {
-        const variableName = match[1].trim();
-        const replacementValue = getOutputFromPreviousStep(nodeIndex - 1)[variableName]; // Simplified for demonstration
-        inputParameters.url = inputParameters.url.replace(match[0], replacementValue);
-    }
-
-    // Similarly, replace template variables in body, headers, etc.
-    // This example assumes the body is a JSON string that might contain template variables
-    if (inputParameters.body) {
-        let bodyObj = JSON.parse(inputParameters.body);
-        let bodyStr = JSON.stringify(bodyObj, (key, value) => {
-            if (typeof value === 'string' && templateVariableRegex.test(value)) {
-                const match = value.match(templateVariableRegex);
-                const variableName = match[1].trim();
-                const replacementValue = getOutputFromPreviousStep(nodeIndex - 1)[variableName]; // Simplified for demonstration
-                return replacementValue;
-            }
-            return value;
-        });
-        inputParameters.body = bodyStr;
-    }
-
-    // Execute the node with replaced values
-    const data = await executeHttpNode(node); // Assuming executeHttpNode accepts the entire node
-
-    // Store the execution data
-    await executionRepository.insertOne({ [node.id]: data });
-    existingResults.push({ data: data });
-}
-
-// Example usage
-// Assuming nodeIndex is the current node's index in the nodes array
-await replaceTemplateVariablesAndExecute(nodeIndex);
-
 export default async (req, res) => {
     await NextCors(req, res, {
         methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
@@ -131,9 +44,14 @@ try {
         
     } else {
 
+              const data = await executeHttpNode(nodes[stepIndex]);
+            const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
+const dbName = 'test';
+const client = new MongoClient(url);
+await client.connect();
 
-await replaceTemplateVariablesAndExecute(nodes[stepIndex]);
-          
+const db = client.db(dbName);
+  const executionRepository = db.collection(`exec_${tenantId}`);
         await executionRepository.insertOne({  [nodes[stepIndex].id]: data });
         existingResults.push({ data: data });
  
