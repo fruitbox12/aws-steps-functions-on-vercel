@@ -47,7 +47,7 @@ try {
 
 //              const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
 
-              const data = await webhookHttpNode(nodes[stepIndex]);
+              const data = await executeHttpNode(nodes[stepIndex]);
             const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
 const dbName = 'test';
 const client = new MongoClient(url);
