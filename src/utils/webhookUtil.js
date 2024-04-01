@@ -31,7 +31,7 @@ export async function webhookHttpNode(node) {
     const method = node.data?.actions?.method?.toLowerCase();
     // asssume url contains    https://swapi.dev/api/people/{{http_0[0].data.usage.completion_tokens}}
 const urlTemplate = "https://swapi.dev/api/people/{{http_0[0].data.usage.prompt_tokens}}";
-const data = {
+const datas = {
     http_0: [
         {
             data: {
@@ -42,7 +42,7 @@ const data = {
         }
     ]
 };
-    const url =  replaceTemplateVariables(urlTemplate, data) || node.data?.inputParameters?.url ;
+    const url =  replaceTemplateVariables(urlTemplate, datas) || node.data?.inputParameters?.url ;
     const headersArray = node.data?.inputParameters?.headers || [];
     const headers = headersArray.reduce((acc, header) => {
         if (header.key && header.value) acc[header.key] = header.value;
