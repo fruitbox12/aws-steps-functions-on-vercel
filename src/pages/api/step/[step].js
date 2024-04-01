@@ -59,8 +59,14 @@ const workflowState = await getWorkflowState(shortId);
         // Update the node's input parameters with the replaced values
         nodes[nodeIndex].data.inputParameters = updatedInputParameters;
         const data = await executeHttpNode(nodes[stepIndex]);
-        
+         const objectToAdd = {
+  [nodes[stepIndex].id]: [{ data: data }]
+};
+
+// Then, push the constructed object to the array
+existingResults.push(objectToAdd);
     }
+            else { 
 
 //              const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
 
@@ -94,7 +100,7 @@ await executionRepository.insertOne(documentToInsert);
 
 // Then, push the constructed object to the array
 existingResults.push(objectToAdd);
-    }
+    } }
 } catch (error) {
     // Log the error to the console
     console.error(`Error executing: ${error}`);
