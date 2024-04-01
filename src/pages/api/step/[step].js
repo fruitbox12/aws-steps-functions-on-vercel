@@ -4,36 +4,7 @@ import NextCors from 'nextjs-cors';
 import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
 import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
 
-const { MongoClient, ObjectId } = require('mongodb');
-
-async function fetchDataById(tenantId, documentId) {
-    const client = new MongoClient('mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority');
-    try {
-        await client.connect();
-        const db = client.db('test');
-        const collection = db.collection(exec_${tenantId});
-        
-        // Convert string ID to ObjectId and fetch document
-        const document = await collection.findOne({ _id: new ObjectId(documentId) });
-        
-        return document;
-    } finally {
-        await client.close();
-    }
-}
-
-function replaceTemplateVariables(inputParameters, data) {
-    const templateVariableRegex = /\{\{\s*(.*?)\s*\}\}/g; // Regex to match {{ variable_name }}
-    let jsonString = JSON.stringify(inputParameters);
-    
-    jsonString = jsonString.replace(templateVariableRegex, (match, variableName) => {
-        // Assume data contains the replacement values directly
-        const replacement = data[variableName];
-        return replacement ? replacement : match; // Return match if no replacement found
-    });
-
-    return JSON.parse(jsonString);
-}
+const { MongoClient } = require('mongodb');
 
 export default async (req, res) => {
     await NextCors(req, res, {
@@ -72,19 +43,7 @@ try {
         const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
         
     } else {
-fetchDataById(tenantId, documentId)
-    .then(document => {
-        if (document) {
-            // Assuming nodes[stepIndex].data.inputParameters is the object containing template strings
-           replaceTemplateVariables(nodes[stepIndex].data.inputParameters, document);
-            
-            // Now updatedInputParameters contains the input parameters with replaced values
-            // You can proceed to use these parameters in your workflow
-        } else {
-            console.log('Document not found');
-        }
-    })
-    .catch(error => console.error('An error occurred:', error));
+
               const data = await executeHttpNode(nodes[stepIndex]);
             const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
 const dbName = 'test';
@@ -101,7 +60,7 @@ const nodeData = { [nodeId]: data };
 // Construct the document to insert, including the custom _id and the dynamic key data
 const documentToInsert = {
   _id: documentId,
-  ...{ [nodeId]: data }
+  ...nodeData
 };
 
 // Insert the document into the collection
