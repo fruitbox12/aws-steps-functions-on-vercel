@@ -57,7 +57,7 @@ const datas = {
     ]
 };
 
-const replacedUrl = replaceTemplateVariables(urlTemplate, datas;
+const replacedUrl = replaceTemplateVariables(urlTemplate, datas);
 
         // Update the node's input parameters with the replaced values
         nodes[nodeIndex].data.inputParameters.url = replacedUrl;
