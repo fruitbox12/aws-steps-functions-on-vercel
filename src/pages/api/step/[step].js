@@ -106,9 +106,10 @@ existingResults.push(objectToAdd);
     console.error(`Error executing: ${error}`);
     // Push the error message or error object to existingResults for later processing
     existingResults.push({ error: error.message || 'Unknown error' });
+            await setWorkflowState(shortId, existingResults);
+
 }
 
-        await setWorkflowState(shortId, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
