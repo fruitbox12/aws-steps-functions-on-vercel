@@ -52,7 +52,7 @@ const workflowState = await getWorkflowState(shortId);
         // If the structure of lastState does not directly match what replaceTemplateVariables expects,
         // you may need to adjust this part.
         const updatedInputParameters = replaceTemplateVariables(
-            nodes[nodeIndex].data.inputParameters,
+            nodes[nodeIndex].data.inputParameters.url,
             lastState
         );
 
