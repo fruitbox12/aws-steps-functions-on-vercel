@@ -55,8 +55,9 @@ const db = client.db(dbName);
 // Assuming generateShortId is a function that returns a unique string ID
 const documentId = generateShortId(nodes[stepIndex].id);
 const nodeId = nodes[stepIndex].id;
-const nodeData = { [nodeId]: data };
-
+const nodeData = {
+    [nodeId]: { data: data }
+};
 // Construct the document to insert, including the custom _id and the dynamic key data
 const documentToInsert = {
   _id: documentId,
