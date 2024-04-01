@@ -44,9 +44,22 @@ try {
         const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
         
     } else {     if (nodes[stepIndex] > 1) {
-const workflowState = await getWorkflowState(shortId);
-                const lastStateIndex = workflowState.length - 1;
-        const lastState = workflowState[lastStateIndex];
+
+          const data = await executeHttpNode(nodes[stepIndex]);
+            const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
+const dbName = 'test';
+const client = new MongoClient(url);
+await client.connect();
+
+const db = client.db(dbName);
+  const executionRepository = db.collection(`exec_${tenantId}`);
+ const options = {
+            sort: { 'created': -1 },
+            projection: { nodes[stepIndex-1].id: 1 }  // Only return the http_0 field
+        };
+
+        const lastState = await executionRepository.findOne({}, options);
+      
         
         // Assuming the last state can be directly used for template variable replacement
         // If the structure of lastState does not directly match what replaceTemplateVariables expects,
