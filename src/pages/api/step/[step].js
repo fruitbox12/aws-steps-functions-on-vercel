@@ -74,12 +74,9 @@ const options = {
         // Update the node's input parameters with the replaced values
         nodes[nodeIndex].data.inputParameters.url = updatedInputParameters;
         const data = await executeHttpNode(nodes[stepIndex]);
-         const objectToAdd = {
-  [nodes[stepIndex].id]: [{ data: data }]
-};
-
+ 
 // Then, push the constructed object to the array
-existingResults.push(objectToAdd);
+existingResults.push({ data: data });
     }
             else { 
 
@@ -109,22 +106,19 @@ const documentToInsert = {
 
 // Insert the document into the collection
 await executionRepository.insertOne(documentToInsert);
- const objectToAdd = {
-  [nodes[stepIndex].id]: [{ data: data }]
-};
 
 // Then, push the constructed object to the array
-existingResults.push(objectToAdd);
+existingResults.push({ data: data });
     } }
 } catch (error) {
     // Log the error to the console
     console.error(`Error executing: ${error}`);
     // Push the error message or error object to existingResults for later processing
     existingResults.push({ error: error.message || 'Unknown error' });
-            await setWorkflowState(shortId, existingResults);
+           
 
 }
-
+ await setWorkflowState(shortId, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
