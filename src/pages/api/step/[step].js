@@ -52,7 +52,19 @@ await client.connect();
 
 const db = client.db(dbName);
   const executionRepository = db.collection(`exec_${tenantId}`);
-        await executionRepository.insertOne(_id: generateShortId([nodes[stepIndex].id), {  [nodes[stepIndex].id]: data });
+// Assuming generateShortId is a function that returns a unique string ID
+const documentId = generateShortId(nodes[stepIndex].id);
+const nodeId = nodes[stepIndex].id;
+const nodeData = { [nodeId]: data };
+
+// Construct the document to insert, including the custom _id and the dynamic key data
+const documentToInsert = {
+  _id: documentId,
+  ...nodeData
+};
+
+// Insert the document into the collection
+await executionRepository.insertOne(documentToInsert);
         existingResults.push({ data: data });
  
     }
