@@ -88,7 +88,7 @@ const documentToInsert = {
 
 // Insert the document into the collection
 await executionRepository.insertOne(documentToInsert);
-        existingResults.push({ data: data });
+        existingResults.push({ nodes[stepIndex].id: [ { data: data } ]});
  
     }
 } catch (error) {
@@ -98,7 +98,7 @@ await executionRepository.insertOne(documentToInsert);
     existingResults.push({ error: error.message || 'Unknown error' });
 }
 
-        await setWorkflowState(shortId, documentId);
+        await setWorkflowState(shortId, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
