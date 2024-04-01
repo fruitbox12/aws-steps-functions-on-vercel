@@ -44,34 +44,23 @@ try {
         const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
         
     } else {     if (nodes[stepIndex] > 1) {
-
-            const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
-const dbName = 'test';
-const client = new MongoClient(url);
-await client.connect();
-
-const db = client.db(dbName);
-  const executionRepository = db.collection(`exec_${tenantId}`);
-
-const options = {
-    sort: { 'created': -1 }, // Ensure documents are sorted by 'created' in descending order
-    projection: { 'http_0': 1, _id: 0 }  // Specifically project the 'http_0' field
+const urlTemplate = "https://swapi.dev/api/people/{{http_0[0].data.usage.prompt_tokens}}";
+const data = {
+    http_0: [
+        {
+            data: {
+                usage: {
+                    prompt_tokens: 42
+                }
+            }
+        }
+    ]
 };
-const lastState = await executionRepository.find({ 'http_0': { $exists: true } }, options).toArray();
-      
- 
 
-
-        // Assuming the last state can be directly used for template variable replacement
-        // If the structure of lastState does not directly match what replaceTemplateVariables expects,
-        // you may need to adjust this part.
-        const updatedInputParameters = replaceTemplateVariables(
-            nodes[nodeIndex].data.inputParameters.url,
-           lastState[lastState.length - 1]
-        );
+const replacedUrl = replaceTemplateVariables(urlTemplate, data);
 
         // Update the node's input parameters with the replaced values
-        nodes[nodeIndex].data.inputParameters.url = updatedInputParameters;
+        nodes[nodeIndex].data.inputParameters.url = replacedUrl;
         const data = await executeHttpNode(nodes[stepIndex]);
     
  
