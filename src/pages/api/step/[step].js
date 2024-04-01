@@ -41,7 +41,7 @@ try {
         existingResults.push({ cronResult });
     }
     else if (nodes[stepIndex].data.type === 'webhook') {
-        const registerWebhook = await nodes[stepIndex]("webhook_" + shortId, nodes[stepIndex])
+        const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
         
     } else {     if (nodes[stepIndex] > 1) {
 const workflowState = await getWorkflowState(shortId);
