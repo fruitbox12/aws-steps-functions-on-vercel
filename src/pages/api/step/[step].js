@@ -45,7 +45,14 @@ try {
     } else {
 
               const data = await executeHttpNode(nodes[stepIndex]);
+            const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
+const dbName = 'test';
+const client = new MongoClient(url);
+await client.connect();
 
+const db = client.db(dbName);
+  const executionRepository = db.collection(`exec_${tenantId}`);
+        await executionRepository.insertOne(data);
         existingResults.push({ data });
  
     }
