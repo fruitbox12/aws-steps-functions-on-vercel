@@ -52,7 +52,7 @@ await client.connect();
 
 const db = client.db(dbName);
   const executionRepository = db.collection(`exec_${tenantId}`);
-        await executionRepository.insertOne({ nodes[stepIndex].id: data });
+        await executionRepository.insertOne({  [nodes[stepIndex].id]: data });
         existingResults.push({ data: data });
  
     }
