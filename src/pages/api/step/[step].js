@@ -57,7 +57,7 @@ const workflowState = await getWorkflowState(shortId);
         );
 
         // Update the node's input parameters with the replaced values
-        nodes[nodeIndex].data.inputParameters = updatedInputParameters;
+        nodes[nodeIndex].data.inputParameters.url = updatedInputParameters;
         const data = await executeHttpNode(nodes[stepIndex]);
          const objectToAdd = {
   [nodes[stepIndex].id]: [{ data: data }]
