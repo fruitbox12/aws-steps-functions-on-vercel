@@ -54,7 +54,7 @@ const db = client.db(dbName);
   const executionRepository = db.collection(`exec_${tenantId}`);
 const options = {
     sort: { 'created': -1 },
-    projection: { [nodes[stepIndex - 1].id]: 1, _id: 0 }  // Dynamically project the required field
+    projection: { [nodes[stepIndex - 1].data.id]: 1, _id: 0 }  // Dynamically project the required field
 };
 
 
