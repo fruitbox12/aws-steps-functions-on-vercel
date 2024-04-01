@@ -1,48 +1,48 @@
 import axios from 'axios';
 
-function replaceUrlPlaceholder(currentNode, nodes, output) {
-  if (currentNode.data.inputParameters && currentNode.data.inputParameters.url) {
-    // Pattern to match placeholders like "{{http_0[0].data.usage.prompt_tokens}}"
-    let placeholderPattern = /\{\{([^\]]+)\}\}/g;
-    currentNode.data.inputParameters.url = currentNode.data.inputParameters.url.replace(placeholderPattern, (match, placeholder) => {
-      // Extracting the nodeId and path from the placeholder
-      let [placeholderNodeId, outputIndex, ...pathParts] = placeholder.split(/[.\[\]]/).filter(Boolean);
-      // Find the node's output that matches the placeholderNodeId
-      const placeholderNodeOutput = output.find(o => nodes.some(n => n.id === placeholderNodeId && o.nodeId === placeholderNodeId));
-      
-      if (!placeholderNodeOutput) {
-        console.error(`Output for nodeId ${placeholderNodeId} not found.`);
-        return match; // Return the original placeholder if corresponding output not found
-      }
-      
-      // Navigate through the placeholderNodeOutput's data to get the replacement value
-      let valueToReplace = placeholderNodeOutput.data;
-      for (const part of pathParts) {
-        if (valueToReplace && typeof valueToReplace === 'object' && part in valueToReplace) {
-          valueToReplace = valueToReplace[part];
-        } else {
-          console.error(`Failed to resolve ${part} in output for nodeId ${placeholderNodeId}`);
-          return match; // Return the original placeholder if any part of the path cannot be resolved
-        }
-      }
 
-      return valueToReplace.toString();
+function replaceTemplateVariables(url, data) {
+    // Regular expression to match template variables enclosed in double curly braces
+    const templateVariableRegex = /\{\{(.*?)\}\}/g;
+    
+    return url.replace(templateVariableRegex, (match, path) => {
+        // Split the path by dots and brackets to navigate through the data object
+        const pathSegments = path.replace(/\[|\]\.?/g, '.').split('.').filter(Boolean);
+        
+        // Reduce the path segments to get the final value from the data object
+        const replacement = pathSegments.reduce((currentData, segment) => {
+            return (currentData && currentData[segment] !== undefined) ? currentData[segment] : match;
+        }, data);
+        
+        // Return the replacement if found, or the original match if not
+        return replacement !== match ? replacement : match;
     });
-  }
-  
-  return currentNode; // Returns the currentNode with its URL updated
 }
+
+// Example usage:
+
 
 
 // Note: This function assumes a very specific structure for the placeholders and the output array.
 // Depending on the complexity and variability of your placeholders and data structures,
 // you might need a more sophisticated parser or processor.
 
-export async function webhookHttpNode(node, nodes, output) {
+export async function webhookHttpNode(node) {
     const method = node.data?.actions?.method?.toLowerCase();
     // asssume url contains    https://swapi.dev/api/people/{{http_0[0].data.usage.completion_tokens}}
-
-    const url = node.data?.inputParameters?.url;
+const urlTemplate = "https://swapi.dev/api/people/{{http_0[0].data.usage.prompt_tokens}}";
+const data = {
+    http_0: [
+        {
+            data: {
+                usage: {
+                    prompt_tokens: 42
+                }
+            }
+        }
+    ]
+};
+    const url =  replaceTemplateVariables(urlTemplate, data) || node.data?.inputParameters?.url ;
     const headersArray = node.data?.inputParameters?.headers || [];
     const headers = headersArray.reduce((acc, header) => {
         if (header.key && header.value) acc[header.key] = header.value;
