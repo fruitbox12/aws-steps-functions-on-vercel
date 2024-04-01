@@ -57,7 +57,7 @@ const options = {
     sort: { 'created': -1 }, // Ensure documents are sorted by 'created' in descending order
     projection: { 'http_0': 1, _id: 0 }  // Specifically project the 'http_0' field
 };
-  const lastState = await executionRepository.find({ 'http_0' }).toArray();
+const lastState = await executionRepository.findOne({ 'http_0': { $exists: true } }, options).toArray();
       
  
 
