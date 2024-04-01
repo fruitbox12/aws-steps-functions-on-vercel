@@ -3,6 +3,7 @@ import { getWorkflowState, setWorkflowState } from '../../../utils/kvStorage';
 import NextCors from 'nextjs-cors';
 import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
 import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
+import { replaceTemplateVariables } from '../../../utils/regex'; // Assuming this utility is correctly implemented
 
 const { MongoClient } = require('mongodb');
 
@@ -40,9 +41,28 @@ try {
         existingResults.push({ cronResult });
     }
     else if (nodes[stepIndex].data.type === 'webhook') {
-        const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
+        const registerWebhook = await nodes[stepIndex]("webhook_" + shortId, nodes[stepIndex])
         
-    } else {
+    } else {     else if (nodes[stepIndex] > 1) {
+const workflowState = await getWorkflowState(shortId);
+                const lastStateIndex = workflowState.length - 1;
+        const lastState = workflowState[lastStateIndex];
+        
+        // Assuming the last state can be directly used for template variable replacement
+        // If the structure of lastState does not directly match what replaceTemplateVariables expects,
+        // you may need to adjust this part.
+        const updatedInputParameters = replaceTemplateVariables(
+            nodes[nodeIndex].data.inputParameters,
+            lastState
+        );
+
+        // Update the node's input parameters with the replaced values
+        nodes[nodeIndex].data.inputParameters = updatedInputParameters;
+        const data = await executeHttpNode(nodes[stepIndex]);
+        
+    }
+
+//              const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
 
               const data = await executeHttpNode(nodes[stepIndex]);
             const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
@@ -78,7 +98,7 @@ await executionRepository.insertOne(documentToInsert);
     existingResults.push({ error: error.message || 'Unknown error' });
 }
 
-        await setWorkflowState(shortId, existingResults);
+        await setWorkflowState(shortId, documentId);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
