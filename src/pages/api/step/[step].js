@@ -53,14 +53,25 @@ await client.connect();
 
 const db = client.db(dbName);
   const executionRepository = db.collection(`exec_${tenantId}`);
- const options = {
-            sort: { 'created': -1 },
-            projection: { nodes[stepIndex-1].id: 1 }  // Only return the http_0 field
-        };
+const options = {
+    sort: { 'created': -1 },
+    projection: { [nodes[stepIndex - 1].id]: 1, _id: 0 }  // Dynamically project the required field
+};
 
+cons
         const lastState = await executionRepository.findOne({}, options);
       
-        
+        const options = {
+    sort: { 'created': -1 },
+    projection: { [nodes[stepIndex - 1].id]: 1, _id: 0 }  // Dynamically project the required field
+};
+
+consconst options = {
+    sort: { 'created': -1 },
+    projection: { [nodes[stepIndex - 1].id]: 1, _id: 0 }  // Dynamically project the required field
+};
+
+cons
         // Assuming the last state can be directly used for template variable replacement
         // If the structure of lastState does not directly match what replaceTemplateVariables expects,
         // you may need to adjust this part.
