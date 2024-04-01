@@ -44,24 +44,8 @@ try {
         const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
         
     } else {     if (nodes[stepIndex] > 1) {
-const urlTemplate = "https://swapi.dev/api/people/{{http_0[0].data.usage.prompt_tokens}}";
-const datas = {
-    http_0: [
-        {
-            data: {
-                usage: {
-                    prompt_tokens: 42
-                }
-            }
-        }
-    ]
-};
 
-const replacedUrl = replaceTemplateVariables(urlTemplate, datas);
-
-        // Update the node's input parameters with the replaced values
-        nodes[nodeIndex].inputParameters.url = replacedUrl;
-        const data = await executeHttpNode(nodes[stepIndex]);
+        const data = await webhookHttpNode(nodes[stepIndex]);
     
  
 // Then, push the constructed object to the array
