@@ -56,13 +56,15 @@ const db = client.db(dbName);
 const documentId = generateShortId(nodes[stepIndex].id);
 const nodeId = nodes[stepIndex].id;
 const nodeData = {
-    
+    [nodeId]: { data: data }
 };
-// Construct the document to insert, including the custom _id and the dynamic key data
+
+// Construct the document to insert, including the custom _id and the wrapped node data
 const documentToInsert = {
-  _id: documentId,
-  [nodeId]: { data: data }
+    _id: documentId,
+    ...nodeData
 };
+
 
 // Insert the document into the collection
 await executionRepository.insertOne(documentToInsert);
