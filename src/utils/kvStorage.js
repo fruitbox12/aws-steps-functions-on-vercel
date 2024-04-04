@@ -21,11 +21,6 @@ export async function setWorkflowState(key, state) {
     console.error('Error setting workflow state:', error);
   }
 }
-// utils/kvStorage.js
-import axios from 'axios';
-
-const KV_STORAGE_BASE_URL = "https://renewing-heron-48789.kv.vercel-storage.com";
-const AUTH_HEADER = { Authorization: `Bearer Ab6VASQgZmYxOTk0ZjUtN2JlNS00MDJjLThkN2ItZjg1ZmE5ZGNhZTUwNDJhMzU2MjQyMjExNDJkNmJmYWFjYjNmYmU4NDlkY2U=` };
 
 export async function getWorkflowState(key) {
   try {
