@@ -1,17 +1,11 @@
-import NextCors from 'nextjs-cors';
-import { MongoClient } from 'mongodb';
 import { executeHttpNode } from '../../../utils/httpRequestExecutor';
-import { getWorkflowNodeState, setWorkflowNodeState } from '../../../utils/kvStorage';
-import { registerCron } from '../../../utils/cronUtils';
-import { webhookHttpNode } from '../../../utils/webhookUtil';
-import { replaceTemplateVariables } from '../../../utils/regex';
+import { getWorkflowState, setWorkflowState } from '../../../utils/kvStorage';
+import NextCors from 'nextjs-cors';
+import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
+import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
+import { replaceTemplateVariables } from '../../../utils/regex'; // Assuming this utility is correctly implemented
 
-// Assuming MongoClient, executeHttpNode, registerCron, webhookHttpNode, and replaceTemplateVariables are correctly implemented and imported.
-
-async function generateShortId(prefix) {
-    // This is a placeholder implementation. Use a more robust method for production.
-    return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
-}
+const { MongoClient } = require('mongodb');
 
 export default async (req, res) => {
     await NextCors(req, res, {
@@ -29,74 +23,125 @@ export default async (req, res) => {
         return res.status(400).json({ error: "nodes array is missing in the request body" });
     }
 
-    if (stepIndex < 0) {
+    if (stepIndex < 0  /* || stepIndex >= nodes.length || stepEnd < stepIndex || stepEnd >= nodes.length */) {
         return res.status(204).json({ error: "Invalid step or stepEnd index." });
     }
 
     try {
-        const currentNode = nodes[stepIndex];
-        const currentNodeType = currentNode.data.type;
-        let previousNodeOutput = {};
-
-        // Retrieve the output of the previous node if not the first step
-        if (stepIndex > 0) {
-            const previousNodeId = nodes[stepIndex - 1].id;
-            previousNodeOutput = await getWorkflowNodeState(shortId, previousNodeId);
-        } else {
-            previousNodeOutput = trigger_output; // Use trigger output if it's the first step
+        let existingResults = await getWorkflowState(shortId) || [];
+        if (!Array.isArray(existingResults)) {
+            existingResults = [];
         }
 
-        let nodeResult;
+try {
+    if (nodes[stepIndex].data.type === 'trigger') {
+        // Assuming registerCron function returns some result or confirmation
+                                                                // TODO: Fix this shit, +1 is hard coded but should be getCronNodes => nodes.pop(0) so index 1 is now 0 but the rest of the indexes are present (delete index 0)
+        const cronResult = await registerCron(nodes[stepIndex], [nodes[stepIndex+1]]);
+        existingResults.push({ cronResult });
+    }
+    else if (nodes[stepIndex].data.type === 'webhook') {
+        const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
+        
+    } else {  
 
-        switch (currentNodeType) {
-            case 'trigger':
-                // Execute trigger logic, e.g., registerCron
-                nodeResult = await registerCron(currentNode, [nodes[stepIndex + 1]]);
-                break;
-            case 'webhook':
-                // Execute webhook logic, assuming webhookHttpNode is a placeholder function
-                nodeResult = await webhookHttpNode(currentNode, previousNodeOutput);
-                break;
-            default:
-                // Prepare node input with template variables replaced by previous node's output
-                const nodeInput = replaceTemplateVariables(currentNode.data.input.url, previousNodeOutput);
-                nodeResult = await executeHttpNode({ ...currentNode, data: { ...currentNode.data, input: nodeInput } });
-                break;
-        }
+//              const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
 
-        // Update node result in workflow state
-        await setWorkflowNodeState(shortId, currentNode.id, [{ data: nodeResult }]);
+              const data = await executeHttpNode(nodes[stepIndex]);
+            const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
+const dbName = 'test';
+const client = new MongoClient(url);
+await client.connect();
+
+const db = client.db(dbName);
+  const executionRepository = db.collection(`exec_${tenantId}`);
+// Assuming generateShortId is a function that returns a unique string ID
+const documentId = generateShortId(nodes[stepIndex].id);
+const nodeId = nodes[stepIndex].id;
+const nodeData = {
+    [nodeId]: [ {data: data} ]
+};
+
+// Construct the document to insert, including the custom _id and the wrapped node data
+const documentToInsert = {
+    _id: documentId,
+    ...nodeData
+};
+
+
+// Insert the document into the collection
+await executionRepository.insertOne(documentToInsert);
+
+// Then, push the constructed object to the array
+existingResults.push({ data: data });
+    }
+} catch (error) {
+    // Log the error to the console
+    console.error(`Error executing: ${error}`);
+    // Push the error message or error object to existingResults for later processing
+    existingResults.push({ error: error.message || 'Unknown error' });
+           
+
+}
+ await setWorkflowState(shortId, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
             res.writeHead(307, { Location: `/api/step/${nextStepIndex}?stepEnd=${stepEnd}` });
             res.end();
         } else {
-            // Final step logic, e.g., update execution in MongoDB
 
-            // Initialize MongoDB connection
-            const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
-            const dbName = 'test'; // Replace with your database name
-            const client = new MongoClient(url);
-            await client.connect();
-            const db = client.db(dbName);
-            const executionRepository = db.collection(`execution_${tenantId}`);
+// Connection URL and Database Name
 
-            const documentId = await generateShortId(currentNode.id); // Ensure generateShortId generates a unique identifier
-            const executionData = {
-                _id: documentId,
-                data: nodeResult,
-                workflowId: shortId,
-                nodeId: currentNode.id,
-                timestamp: new Date(),
-            };
+// Assuming `db` is your database instance and `req`, `res` are Express request and response objects
 
-            await executionRepository.insertOne(executionData);
+// Function to insert a new execution and update the workflow with execution data
+    try {
+        const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
+const dbName = 'test';
+const client = new MongoClient(url);
+await client.connect();
 
-            res.status(200).json({ message: "Workflow execution complete", data: nodeResult });
+const db = client.db(dbName);
+
+        // Generate a shortId for the execution
+
+        // New execution object
+        let execution = {
+            _id: null, // This will be set by your database
+            executionData:  JSON.stringify([{nodeId:  nodes[stepIndex].id, nodeLabel: nodes[stepIndex].data.label, data: existingResults, status: "FINISHED"}]) , // Populate as necessary
+            state: "SUCCESS", // Or "SUCCESS" or "FAILED" based on your logic
+            workflowShortId: shortId,
+            shortId: shortId,
+            // Passed in the request body
+            createdDate: new Date(),
+            stoppedDate: new Date() // Set this when the execution stops
+        };
+
+        // Insert the new execution into the database
+        const executionRepository = db.collection(`execution_${tenantId}`);
+        await executionRepository.insertOne(execution);
+
+        // Retrieve updated execution data for the workflow
+        const executionData = await executionRepository.find({ workflowShortId: shortId }).toArray();
+console.log(executionData)
+        // Assuming 'workflow' is already defined or retrieved from the database
+ 
+        // Respond with the updated workflow object
+    } catch (error) {
+        console.error('Error handling execution:', error);
+        // Handle error, e.g., return an error response
+    }
+
+
+res.status(200).json({ data: existingResults });
         }
     } catch (error) {
         console.error(`Error executing step ${stepIndex}:`, error);
-        res.status(500).json({ error: `Error executing step ${stepIndex}: ${error.message}` });
+        res.status(204).json({ error: `Error executing step ${stepIndex}` });
     }
 };
+
+function generateShortId(prefix) {
+    return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+}
