@@ -4,7 +4,7 @@ import { getWorkflowState,setWorkflowNodeState,getWorkflowNodeState, setWorkflow
 import NextCors from 'nextjs-cors';
 import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
 import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
-import { replaceTemplateVariables } from '../../../utils/regex'; // Assuming this utility is correctly implemented
+import { replaceTemplateVariables, replaceTemplateBody } from '../../../utils/regex'; // Assuming this utility is correctly implemented
 
 const { MongoClient } = require('mongodb');
 
@@ -51,7 +51,7 @@ try {        let previousNodeOutput = {};
              const previousNodeId = nodes[stepIndex - 1].id;
             previousNodeOutput = await getWorkflowNodeState(trigger_output);
          const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
-         const nodeBody = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.body, previousNodeOutput);
+         const nodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.body, previousNodeOutput);
 
 // Update the currentNode with the new inputParameters.url value
 nodes[stepIndex].data.inputParameters.url = nodeInput;
