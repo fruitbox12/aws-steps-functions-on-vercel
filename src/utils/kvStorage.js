@@ -71,12 +71,12 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
         Authorization: `Bearer ${KV_REST_API_TOKEN}`,
       },
       method: 'POST',
-    body: {
-    result: JSON.stringify({
-      result: null,
-      [nodeId]: nodeState
-    })
-  },
+      body: JSON.stringify({
+      result: JSON.stringify({
+        result: null,
+        [nodeId]: nodeState
+      })
+    }),
     })
     .then(response => response.json())
     .then(data => console.log('Updated workflow data:', data));
