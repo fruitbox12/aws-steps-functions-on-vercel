@@ -13,11 +13,9 @@ export function replaceTemplateBody(url, dataInput) {
 
     function navigateAndExtractValue(obj, path) {
         const segments = path.split(/[.\[\]']+/).filter(Boolean); // Splitting by dots and brackets, filtering out empty strings
-        console.log('Segments:', segments);
 
         try {
             return segments.reduce((current, segment) => {
-                console.log('Current:', current);
                 return current ? current[segment] : undefined;
             }, obj);
         } catch (error) {
@@ -29,11 +27,15 @@ export function replaceTemplateBody(url, dataInput) {
     // Convert the url object to string
     const stringifiedUrl = JSON.stringify(url);
 
-    return stringifiedUrl.replace(templateVariableRegex, (_, path) => {
+    const replacedUrl = stringifiedUrl.replace(templateVariableRegex, (_, path) => {
         const extractedValue = navigateAndExtractValue(parsedData, path);
         return extractedValue !== undefined ? extractedValue.toString() : _;
     });
+
+    // Stringify the result before returning
+    return JSON.stringify(JSON.parse(replacedUrl));
 }
+
 export function replaceTemplateVariables(url, dataInput) {
     let parsedData;
     try {
