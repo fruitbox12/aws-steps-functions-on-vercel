@@ -50,7 +50,7 @@ try {        let previousNodeOutput = {};
 
              const previousNodeId = nodes[stepIndex - 1].id;
             previousNodeOutput = await getWorkflowNodeState(shortId, previousNodeId);
-         const nodeInput = replaceTemplateVariables(currentNode.data?.inputParameters?.url, previousNodeOutput);
+         const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
 
 // Update the currentNode with the new inputParameters.url value
 currentNode.data.inputParameters.url = nodeInput;
