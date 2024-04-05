@@ -113,7 +113,7 @@ const db = client.db(dbName);
             _id: null, // This will be set by your database
             executionData:  JSON.stringify([{nodeId:  nodes[stepIndex].id, nodeLabel: nodes[stepIndex].data.label, data: existingResults, status: "FINISHED"}]) , // Populate as necessary
             state: "SUCCESS", // Or "SUCCESS" or "FAILED" based on your logic
-            workflowShortId: shortId,
+            workflowShortId: trigger_output,
             shortId: trigger_output,
             // Passed in the request body
             createdDate: new Date(),
