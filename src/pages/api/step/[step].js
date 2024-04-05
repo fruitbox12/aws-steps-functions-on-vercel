@@ -84,6 +84,7 @@ const documentToInsert = {
     _id: documentId,
     ...nodeData
 };
+        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [ {data: data} ]);
 
 
 // Insert the document into the collection
@@ -101,7 +102,6 @@ existingResults.push({ data: data });
 
 }
  await setWorkflowState(shortId, existingResults);
-        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
