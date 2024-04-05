@@ -1,4 +1,4 @@
-function replaceTemplateVariables(url, data) {
+export function replaceTemplateVariables(url, data) {
     // Regular expression to match template variables enclosed in double curly braces
     const templateVariableRegex = /\{\{(.*?)\}\}/g;
     
