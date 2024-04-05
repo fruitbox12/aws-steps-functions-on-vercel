@@ -49,7 +49,7 @@ try {        let previousNodeOutput = {};
         else if (stepIndex > 1) {
 
              const previousNodeId = nodes[stepIndex - 1].id;
-            previousNodeOutput = await getWorkflowNodeState(shortId, previousNodeId);
+            previousNodeOutput = await getWorkflowNodeState(trigger_output);
          const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
 
 // Update the currentNode with the new inputParameters.url value
