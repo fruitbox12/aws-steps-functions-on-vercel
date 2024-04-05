@@ -18,7 +18,7 @@ export default async (req, res) => {
     const { step: stepString, stepEnd: stepEndString } = req.query;
     const stepIndex = parseInt(stepString, 10);
     const stepEnd = parseInt(stepEndString, 10);
-    const { nodes, shortId, tenantId, trigger_output} = req.body;
+    const { nodes, shortId, tenantId, trigger_output = {}} = req.body;
 
     if (!nodes) {
         return res.status(400).json({ error: "nodes array is missing in the request body" });
@@ -58,6 +58,7 @@ nodes[stepIndex].data.inputParameters.url = nodeInput;
 // Execute the HTTP Node with the updated currentNode
 const data = await executeHttpNode(nodes[stepIndex]);
 existingResults.push({ data: data });
+await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
 
         } else {  
 
@@ -131,7 +132,7 @@ const db = client.db(dbName);
             executionData:  JSON.stringify([{nodeId:  nodes[stepIndex].id, nodeLabel: nodes[stepIndex].data.label, data: existingResults, status: "FINISHED"}]) , // Populate as necessary
             state: "SUCCESS", // Or "SUCCESS" or "FAILED" based on your logic
             workflowShortId: shortId,
-            shortId: trigger_output,
+            shortId: trigger_output || "E" + shortId ,
             // Passed in the request body
             createdDate: new Date(),
             stoppedDate: new Date() // Set this when the execution stops
