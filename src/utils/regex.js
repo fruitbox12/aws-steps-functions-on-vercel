@@ -1,17 +1,32 @@
-export function replaceTemplateVariables(url, data) {
-    // Regular expression to match template variables enclosed in double curly braces
+export function replaceTemplateVariables(url, dataInput) {
+    let parsedData;
+    try {
+        // First, parse the outer JSON to get into the 'result' key
+        const outerParsedData = JSON.parse(dataInput.result);
+        // Assuming the actual data you need to navigate is under a 'result' key in the parsed object
+        parsedData = outerParsedData; // If 'result' is nested, you might need another JSON.parse here depending on the structure
+    } catch (error) {
+        console.error("Error parsing JSON from 'result':", error);
+        return url;
+    }
+
     const templateVariableRegex = /\{\{(.*?)\}\}/g;
-    
-    return url.replace(templateVariableRegex, (match, path) => {
-        // Split the path by dots and brackets to navigate through the data object
-        const pathSegments = path.replace(/\[|\]\.?/g, '.').split('.').filter(Boolean);
-        
-        // Reduce the path segments to get the final value from the data object
-        const replacement = pathSegments.reduce((currentData, segment) => {
-            return (currentData && currentData[segment] !== undefined) ? currentData[segment] : match;
-        }, data);
-        
-        // Return the replacement if found, or the original match if not
-        return replacement !== match ? replacement : match;
+
+    // Function to navigate through the object based on the provided path
+    // Handles both array indices and object keys
+    function navigateAndExtractValue(obj, path) {
+        const segments = path.split(/[.\[\]']+/).filter(Boolean); // Splitting by dots, brackets, and filtering out empty strings
+
+        try {
+            return segments.reduce((current, segment) => current[segment], obj);
+        } catch (error) {
+            console.error(`Error navigating path '${path}':`, error);
+            return null;
+        }
+    }
+
+    return url.replace(templateVariableRegex, (_, path) => {
+        const extractedValue = navigateAndExtractValue(parsedData, path);
+        return extractedValue !== null ? extractedValue.toString() : _;
     });
 }
