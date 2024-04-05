@@ -1,3 +1,39 @@
+
+export function replaceTemplateBody(url, dataInput) {
+    let parsedData;
+    try {
+        // First, parse the outer layer of JSON from the 'result' key
+        parsedData = JSON.parse(dataInput.result);
+    } catch (error) {
+        console.error("Error parsing JSON from 'result':", error);
+        return url;
+    }
+
+    const templateVariableRegex = /\{\{(.*?)\}\}/g;
+
+    function navigateAndExtractValue(obj, path) {
+        const segments = path.split(/[.\[\]']+/).filter(Boolean); // Splitting by dots and brackets, filtering out empty strings
+        console.log('Segments:', segments);
+
+        try {
+            return segments.reduce((current, segment) => {
+                console.log('Current:', current);
+                return current ? current[segment] : undefined;
+            }, obj);
+        } catch (error) {
+            console.error(`Error navigating path '${path}':`, error);
+            return null;
+        }
+    }
+
+    // Convert the url object to string
+    const stringifiedUrl = JSON.stringify(url);
+
+    return stringifiedUrl.replace(templateVariableRegex, (_, path) => {
+        const extractedValue = navigateAndExtractValue(parsedData, path);
+        return extractedValue !== undefined ? extractedValue.toString() : _;
+    });
+}
 export function replaceTemplateVariables(url, dataInput) {
     let parsedData;
     try {
