@@ -1,111 +1,58 @@
-import NextCors from 'nextjs-cors';
-import { MongoClient } from 'mongodb';
-import { executeHttpNode } from '../../../utils/httpRequestExecutor';
-import { getWorkflowNodeState, setWorkflowNodeState } from '../../../utils/kvStorage';
-import { registerCron } from '../../../utils/cronUtils';
-import { webhookHttpNode } from '../../../utils/webhookUtil';
-import { replaceTemplateVariables } from '../../../utils/regex';
+import axios from 'axios';
 
-// Assuming MongoClient, executeHttpNode, registerCron, webhookHttpNode, and replaceTemplateVariables are correctly implemented and imported.
+export async function executeHttpNode(node) {
+    const method = node.data?.actions?.method?.toLowerCase();
+    const url = node.data?.inputParameters?.url;
+    const headersArray = node.data?.inputParameters?.headers || [];
+    const headers = headersArray.reduce((acc, header) => {
+        if (header.key && header.value) acc[header.key] = header.value;
+        return acc;
+    }, {});
 
-async function generateShortId(prefix) {
-    // This is a placeholder implementation. Use a more robust method for production.
-    return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
-export default async (req, res) => {
-    await NextCors(req, res, {
-        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-        origin: '*',
-        optionsSuccessStatus: 200,
-    });
-
-    const { step: stepString, stepEnd: stepEndString } = req.query;
-    const stepIndex = parseInt(stepString, 10);
-    const stepEnd = parseInt(stepEndString, 10);
-    const { nodes, shortId, tenantId, trigger_output = {} } = req.body;
-
-    if (!nodes) {
-        return res.status(400).json({ error: "nodes array is missing in the request body" });
+    let data;
+    try {
+        data = (method === 'post' || method === 'put') ? JSON.parse(node.data?.inputParameters?.body || '{}') : undefined;
+    } catch (error) {
+        console.error(`Error parsing JSON body for node ${node.id}:`, error);
     }
 
-    if (stepIndex < 0) {
-        return res.status(204).json({ error: "Invalid step or stepEnd index." });
-    }
+    const axiosConfig = {
+        method,
+        url,
+        headers,
+        data
+    };
 
     try {
-        const currentNode = nodes[stepIndex];
-        const currentNodeType = currentNode.data.type;
-        let previousNodeOutput = {};
+        const response = await axios(axiosConfig);
+        console.log(`Node ${node.id} executed with result:`, response.data);
 
-        // Retrieve the output of the previous node if not the first step
-        if (stepIndex > 0) {
-            const previousNodeId = nodes[stepIndex - 1].id;
-            previousNodeOutput = await getWorkflowNodeState(shortId, previousNodeId);
+        // Initialize a variable to hold the extracted content
+        let extractedContent = "";
+
+        // Check if the response includes 'choices' and has at least one choice
+        if (response.data.choices && response.data.choices.length > 0) {
+            const firstChoice = response.data.choices[0];
+
+            // Assuming 'content' is directly on the choice object
+            if (firstChoice.content) {
+                console.log(`Content from the result:`, firstChoice.content);
+                extractedContent = firstChoice.content;
+            } else if (firstChoice.message && typeof firstChoice.message === 'object' && firstChoice.message.content) {
+                // If 'content' is nested within a 'message' object
+                console.log(`Content from the result:`, firstChoice.message.content);
+                extractedContent = firstChoice.message.content;
+            } else {
+                console.log(`No content or unexpected format in the first choice.`);
+            }
         } else {
-            previousNodeOutput = trigger_output; // Use trigger output if it's the first step
+            console.log(`No choices available in the response.`);
         }
 
-        let nodeResult;
-
-        if (stepIndex > 1) {
-  // Extract and modify the URL using template variables
-const modifiedUrl = replaceTemplateVariables(currentNode.data?.inputParameters?.url, previousNodeOutput);
-console.log(modifiedUrl)
-// Create a new inputParameters object with the modified URL
-const updatedInputParameters = {
-  ...currentNode.data.inputParameters, // Spread the original inputParameters to retain other properties
-  url: modifiedUrl // Overwrite the url property with the modified URL
-};
-
-// Execute the HTTP node with the updated inputParameters
-nodeResult = await executeHttpNode({
-  ...currentNode,
-  data: {
-    ...currentNode.data,
-    inputParameters: updatedInputParameters // Pass the updated inputParameters object
-  }
-});
-
-        } else {
-            nodeResult = await executeHttpNode(currentNode);
-        }
-                // Prepare node input with template variables replaced by previous node's output
-               
-
-        // Update node result in workflow state
-        await setWorkflowNodeState(shortId, currentNode.id, [{ data: nodeResult }]);
-
-        if (stepIndex < stepEnd) {
-            const nextStepIndex = stepIndex + 1;
-            res.writeHead(307, { Location: `/api/step/${nextStepIndex}?stepEnd=${stepEnd}` });
-            res.end();
-        } else {
-            // Final step logic, e.g., update execution in MongoDB
-
-            // Initialize MongoDB connection
-            const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
-            const dbName = 'test'; // Replace with your database name
-            const client = new MongoClient(url);
-            await client.connect();
-            const db = client.db(dbName);
-            const executionRepository = db.collection(`execution_${tenantId}`);
-
-            const documentId = await generateShortId(currentNode.id); // Ensure generateShortId generates a unique identifier
-            const executionData = {
-                _id: documentId,
-                data: nodeResult,
-                workflowId: shortId,
-                nodeId: currentNode.id,
-                timestamp: new Date(),
-            };
-
-            await executionRepository.insertOne(executionData);
-
-            res.status(200).json({ message: "Workflow execution complete", data: nodeResult });
-        }
+        // Return or process the extracted content as needed
+        return response.data;
     } catch (error) {
-        console.error(`Error executing step ${stepIndex}:`, error);
-        res.status(500).json({ error: `Error executing step ${stepIndex}: ${error.message}` });
+        console.error(`Error executing HTTP node ${node.id}:`, error);
+        throw error;
     }
-};
+}
