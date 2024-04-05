@@ -29,8 +29,7 @@ export async function setWorkflowState(key, state) {
 export async function getWorkflowNodeState(workflowKey, nodeId) {
   try {
     const response = await axios.get(`${KV_STORAGE_BASE_URL}/get/${workflowKey}`, { headers: AUTH_HEADER });
-    const workflowData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-    return workflowData[nodeId] || [];
+    return response.data;
   } catch (error) {
     console.error('Error getting workflow node state:', error);
     return [];
