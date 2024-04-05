@@ -51,9 +51,11 @@ try {        let previousNodeOutput = {};
              const previousNodeId = nodes[stepIndex - 1].id;
             previousNodeOutput = await getWorkflowNodeState(trigger_output);
          const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
+         const nodeBody = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.body, previousNodeOutput);
 
 // Update the currentNode with the new inputParameters.url value
 nodes[stepIndex].data.inputParameters.url = nodeInput;
+nodes[stepIndex].data.inputParameters.body = nodeBody;
 
 // Execute the HTTP Node with the updated currentNode
 const data = await executeHttpNode(nodes[stepIndex]);
