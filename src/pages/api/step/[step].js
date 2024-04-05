@@ -50,7 +50,7 @@ export default async (req, res) => {
 
         if (stepIndex > 1) {
            // Extract and modify the URL using template variables
-const modifiedUrl = replaceTemplateVariables(currentNode.data?.inputParameters?.url, previousNodeOutput);
+const modifiedUrl = replaceTemplateVariables(currentNode.data?.inputParameters?.url, { previousNodeId: previousNodeOutput });
 
 // Create a new inputParameters object with the modified URL
 const updatedInputParameters = {
