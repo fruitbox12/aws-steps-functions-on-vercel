@@ -1,6 +1,6 @@
 
 import { executeHttpNode } from '../../../utils/httpRequestExecutor';
-import { getWorkflowState,setWorkflowNodeState, setWorkflowState } from '../../../utils/kvStorage';
+import { getWorkflowState,setWorkflowNodeState,getWorkflowNodeState, setWorkflowState } from '../../../utils/kvStorage';
 import NextCors from 'nextjs-cors';
 import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
 import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
@@ -44,8 +44,23 @@ try {
     else if (nodes[stepIndex].data.type === 'webhook') {
         const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
         
-    } else {  
+    } 
+        else if (stepIndex > 1) {
 
+             const previousNodeId = nodes[stepIndex - 1].id;
+            previousNodeOutput = await getWorkflowNodeState(shortId, previousNodeId);
+         const nodeInput = replaceTemplateVariables(currentNode.data?.inputParameters?.url, trigger_output);
+
+// Update the currentNode with the new inputParameters.url value
+currentNode.data.inputParameters.url = nodeInput;
+
+// Execute the HTTP Node with the updated currentNode
+const data = await executeHttpNode(currentNode);
+existingResults.push({ data: data });
+
+        } else {  
+
+    
 //              const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
 
               const data = await executeHttpNode(nodes[stepIndex]);
