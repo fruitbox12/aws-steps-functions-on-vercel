@@ -49,8 +49,24 @@ export default async (req, res) => {
         let nodeResult;
 
         if (stepIndex > 1) {
-            const nodeInput = replaceTemplateVariables(currentNode.data?.inputParameters?.url, previousNodeOutput);
-            nodeResult = await executeHttpNode({ ...currentNode, data: { ...currentNode.data, input: nodeInput } });
+           // Extract and modify the URL using template variables
+const modifiedUrl = replaceTemplateVariables(currentNode.data?.inputParameters?.url, previousNodeOutput);
+
+// Create a new inputParameters object with the modified URL
+const updatedInputParameters = {
+  ...currentNode.data.inputParameters, // Spread the original inputParameters to retain other properties
+  url: modifiedUrl // Overwrite the url property with the modified URL
+};
+
+// Execute the HTTP node with the updated inputParameters
+nodeResult = await executeHttpNode({
+  ...currentNode,
+  data: {
+    ...currentNode.data,
+    inputParameters: updatedInputParameters // Pass the updated inputParameters object
+  }
+});
+
 
         } else {
             nodeResult = await executeHttpNode(currentNode);
