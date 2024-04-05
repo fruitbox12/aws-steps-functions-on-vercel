@@ -34,12 +34,12 @@ try {
         // Assuming registerCron function returns some result or confirmation
         const cronResult = await registerCron(nodes[stepIndex]);
         existingResults.push({ cronResult });
-    else if (nodes[stepIndex].data.type === 'webhook') {
+  }   else if (nodes[stepIndex].data.type === 'webhook') {
         const registerWebhook = await setWorkflowState("webhook_" + shortId, nodes[stepIndex])
         
     } 
 
-    } else {
+    else {
         const result = await executeHttpNode(nodes[stepIndex]);
         existingResults.push({ result });
     }
