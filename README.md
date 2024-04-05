@@ -1,5 +1,6 @@
 ### Key Components:
 
+
 -   Middleware Configuration: Uses `NextCors` to set up Cross-Origin Resource Sharing (CORS), allowing requests from any origin.
 -   Input Validation: Ensures the request contains necessary data and validates indexes to prevent errors.
 -   Workflow Execution:
