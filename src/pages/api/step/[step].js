@@ -85,7 +85,7 @@ existingResults.push({ data: data });
 
 }
  await setWorkflowState(shortId, existingResults);
-        await setWorkflowNodeState(trigger_output, currentNode.id, existingResults);
+        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
