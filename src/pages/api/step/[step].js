@@ -84,6 +84,7 @@ const documentToInsert = {
     _id: documentId,
     ...nodeData
 };
+            
 await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
 
 
