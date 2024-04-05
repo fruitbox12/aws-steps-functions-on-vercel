@@ -61,7 +61,7 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
     if (!workflowData[nodeId]) {
       workflowData[nodeId] = [{data: nodeState}];
     } else {
-      workflowData[nodeId].push({data: nodeState});
+      workflowData[nodeId].push({"result": { "result": null, nodeId: nodeState}});
     }
 
     // Save the updated workflow state back to KV storage
@@ -71,7 +71,7 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
         Authorization: `Bearer ${KV_REST_API_TOKEN}`,
       },
       method: 'POST',
-      body: JSON.stringify(nodeState),
+    body: JSON.stringify({ "result": { "result": null, nodeId: JSON.stringify(nodeState) }}),
     })
     .then(response => response.json())
     .then(data => console.log('Updated workflow data:', data));
