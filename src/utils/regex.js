@@ -1,4 +1,4 @@
- function replaceTemplateVariables2(url, dataInput) {
+export function replaceTemplateVariables(url, dataInput) {
     let parsedData;
     try {
         // First, parse the outer JSON to get into the 'result' key
@@ -30,7 +30,7 @@
         return extractedValue !== null ? extractedValue.toString() : _;
     });
 }
-export function replaceTemplateVariables(url, dataInput) {
+ function replaceTemplateVariables2(url, dataInput) {
     // Parse the initial JSON string within the 'result' key of dataInput
     let parsedData;
     try {
