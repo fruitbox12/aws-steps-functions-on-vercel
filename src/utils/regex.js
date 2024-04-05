@@ -1,4 +1,4 @@
-function replaceTemplateVariables(url, dataInput) {
+export function replaceTemplateVariables(url, dataInput) {
     let parsedData;
     try {
         // First, parse the outer layer of JSON from the 'result' key
