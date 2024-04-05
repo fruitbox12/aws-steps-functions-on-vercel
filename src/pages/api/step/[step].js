@@ -23,7 +23,7 @@ export default async (req, res) => {
     const { step: stepString, stepEnd: stepEndString } = req.query;
     const stepIndex = parseInt(stepString, 10);
     const stepEnd = parseInt(stepEndString, 10);
-    const { nodes, shortId, tenantId, trigger_output = {} } = req.body;
+    const { nodes, shortId, tenantId, trigger_output } = req.body;
 
     if (!nodes) {
         return res.status(400).json({ error: "nodes array is missing in the request body" });
@@ -39,9 +39,9 @@ export default async (req, res) => {
         let previousNodeOutput = {};
 
         // Retrieve the output of the previous node if not the first step
-        if (stepIndex > 0) {
+        if (stepIndex > 1) {
             const previousNodeId = nodes[stepIndex - 1].id;
-            previousNodeOutput = await getWorkflowNodeState(shortId, previousNodeId);
+            previousNodeOutput = await getWorkflowNodeState(trigger_output, previousNodeId);
         } else {
             previousNodeOutput = trigger_output; // Use trigger output if it's the first step
         }
@@ -75,7 +75,7 @@ nodeResult = await executeHttpNode({
                
 
         // Update node result in workflow state
-        await setWorkflowNodeState(shortId, currentNode.id, [{ data: nodeResult }]);
+        await setWorkflowNodeState(trigger_output, currentNode.id, [{ data: nodeResult }]);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
