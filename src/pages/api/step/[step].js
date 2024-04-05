@@ -53,10 +53,10 @@ try {        let previousNodeOutput = {};
          const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
 
 // Update the currentNode with the new inputParameters.url value
-currentNode.data.inputParameters.url = nodeInput;
+nodes[stepIndex].data.inputParameters.url = nodeInput;
 
 // Execute the HTTP Node with the updated currentNode
-const data = await executeHttpNode(currentNode);
+const data = await executeHttpNode(nodes[stepIndex]);
 existingResults.push({ data: data });
 
         } else {  
