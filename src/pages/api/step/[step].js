@@ -1,6 +1,6 @@
 
 import { executeHttpNode } from '../../../utils/httpRequestExecutor';
-import { getWorkflowState, setWorkflowState } from '../../../utils/kvStorage';
+import { getWorkflowState,setWorkflowNodeState, setWorkflowState } from '../../../utils/kvStorage';
 import NextCors from 'nextjs-cors';
 import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
 import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
@@ -85,6 +85,7 @@ existingResults.push({ data: data });
 
 }
  await setWorkflowState(shortId, existingResults);
+        await setWorkflowNodeState(trigger_output, currentNode.id, [{ data: nodeResult }]);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
