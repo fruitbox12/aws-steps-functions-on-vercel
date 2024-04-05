@@ -56,12 +56,16 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
       workflowData = {};
     }
 
+   const formattedNodeState = {
+      result: JSON.stringify(nodeState)
+    };
+
     // Assuming nodeState is already structured correctly, directly assign it
     // If nodeId exists, append the new state; otherwise, initialize it with the provided state
     if (!workflowData[nodeId]) {
-      workflowData[nodeId] = [{data: nodeState}];
+      workflowData[nodeId] = [formattedNodeState];
     } else {
-      workflowData[nodeId].push({data: nodeState});
+      workflowData[nodeId].push(formattedNodeState);
     }
 
     // Save the updated workflow state back to KV storage
