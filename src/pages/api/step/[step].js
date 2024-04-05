@@ -59,7 +59,7 @@ export default async (req, res) => {
                 break;
             default:
                 // Prepare node input with template variables replaced by previous node's output
-                const nodeInput = replaceTemplateVariables(currentNode.data.input, previousNodeOutput);
+                const nodeInput = replaceTemplateVariables(currentNode.data.input.url, previousNodeOutput);
                 nodeResult = await executeHttpNode({ ...currentNode, data: { ...currentNode.data, input: nodeInput } });
                 break;
         }
