@@ -26,7 +26,7 @@ export async function setWorkflowState(key, state) {
 
 
 // Retrieves the state of a specific node within a workflow
-export async function getWorkflowNodeState(workflowKey, nodeId) {
+export async function getWorkflowNodeState(workflowKey) {
   try {
     const response = await axios.get(`${KV_STORAGE_BASE_URL}/get/${workflowKey}`, { headers: AUTH_HEADER });
     return response.data;
