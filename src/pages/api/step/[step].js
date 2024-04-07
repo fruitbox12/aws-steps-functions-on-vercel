@@ -123,13 +123,11 @@ for (let i = 0; i < nodes.length; i++) {
         const executionRepository = db.collection(`execution_${tenantId}`);
         await executionRepository.insertOne(execution);
 
-        // Retrieve updated execution data for the workflow
-        const executionData = await executionRepository.find({ workflowShortId: shortId }).toArray();
-        // Assuming 'workflow' is already defined or retrieved from the database
+        // Retrieve updated execution data for the workflow        // Assuming 'workflow' is already defined or retrieved from the database
  
         // Respond with the updated workflow object
     } catch (error) {
-        console.error('Error handling execution:', error);
+        console.error('Error handling execution: ' + nodes[stepIndex].id, error);
         // Handle error, e.g., return an error response
     }
 
