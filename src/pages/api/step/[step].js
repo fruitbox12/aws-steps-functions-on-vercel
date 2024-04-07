@@ -39,7 +39,7 @@ try {        let previousNodeOutput = {};
     if (nodes[stepIndex].data.type === 'trigger') {
         // Assuming registerCron function returns some result or confirmation
                                                                 // TODO: Fix this shit, +1 is hard coded but should be getCronNodes => nodes.pop(0) so index 1 is now 0 but the rest of the indexes are present (delete index 0)
-        const cronResult = await registerCron(nodes[stepIndex], [nodes[stepIndex+1]]);
+        const cronResult = await registerCron(nodes[stepIndex], [nodes[stepIndex+1]], shortId, tenantId);
         existingResults.push({ cronResult });
     }
     else if (nodes[stepIndex].data.type === 'webhook') {
