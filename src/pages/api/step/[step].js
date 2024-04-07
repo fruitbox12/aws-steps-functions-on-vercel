@@ -45,36 +45,33 @@ try {
         existingResults.push({ cronResult });
     } else if (nodes[stepIndex].data.type === 'webhook') {
        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
-       await setWorkflowNodeState("w" + trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
 
     } else if (stepIndex > 0) {
+const previousFuckingOutputs = [];
 
-        const previousNodeId = nodes[stepIndex - 1].id;
-        previousNodeOutput = await getWorkflowNodeState(trigger_output);
-        webhookNodeOutput = await getWorkflowNodeState("w"+trigger_output);
+// Iterate through the nodes array to retrieve state and replace variables
+for (let i = 0; i < nodes.length; i++) {
+    const previousNodeId = i > 0 ? nodes[i - 1].id : null;
+    const previousNodeOutput = previousNodeId ? await getWorkflowNodeState(previousNodeId + trigger_output) : null;
+    previousFuckingOutputs.push(previousNodeOutput);
 
-         const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
-         const nodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.body, previousNodeOutput);
-///
-         const webhookNodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, webhookNodeOutput);
-         const webhookNodenodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.body, webhookNodeOutput);
+    if (i > 0) {
+        const nodeInput = replaceTemplateVariables(nodes[i].data?.inputParameters?.url, previousNodeOutput);
+        const nodeBody = replaceTemplateBody(nodes[i].data?.inputParameters?.body, previousNodeOutput);
 
         // Update the currentNode with the new inputParameters.url value
-        nodes[stepIndex].data.inputParameters.url = nodeInput;
-        nodes[stepIndex].data.inputParameters.body = nodeBody;
-        
-        // fucking webhook parser
-        nodes[stepIndex].data.inputParameters.url = webhookNodeInput;
-        nodes[stepIndex].data.inputParameters.body = webhookNodenodeBody;
-                    //
+        nodes[i].data.inputParameters.url = nodeInput;
+        nodes[i].data.inputParameters.body = nodeBody;
+    }
+}
         // Execute the HTTP Node with the updated currentNode
         const data = await executeHttpNode(nodes[stepIndex]);
         existingResults.push({ data: data });
-        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+        await setWorkflowNodeState(nodes[stepIndex].id + trigger_output, nodes[stepIndex].id, [{ data: data }]);
     } else {  
     //const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
         const data = await executeHttpNode(nodes[stepIndex]);
-        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+        await setWorkflowNodeState(nodes[stepIndex].id + trigger_output, nodes[stepIndex].id, [{ data: data }]);
     // Insert the document into the collection
     // Then, push the constructed object to the array
     existingResults.push({ data: data });
