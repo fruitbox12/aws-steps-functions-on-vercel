@@ -44,7 +44,7 @@ try {
         const cronResult = await registerCron(nodes[stepIndex], [nodes[stepIndex+1]], shortId, tenantId);
         existingResults.push({ cronResult });
     } else if (nodes[stepIndex].data.type === 'webhook') {
-       await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
+       await setWorkflowNodeState(nodes[stepIndex].id + trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
 
     } else if (stepIndex > 0) {
 const previousFuckingOutputs = [];
