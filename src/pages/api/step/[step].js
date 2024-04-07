@@ -68,31 +68,12 @@ await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]
 //              const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
 
               const data = await executeHttpNode(nodes[stepIndex]);
-            const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
-const dbName = 'test';
-const client = new MongoClient(url);
-await client.connect();
-
-const db = client.db(dbName);
-  const executionRepository = db.collection(`exec_${tenantId}`);
-// Assuming generateShortId is a function that returns a unique string ID
-const documentId = generateShortId(nodes[stepIndex].id);
-const nodeId = nodes[stepIndex].id;
-const nodeData = {
-    [nodeId]: [ {data: data} ]
-};
-
-// Construct the document to insert, including the custom _id and the wrapped node data
-const documentToInsert = {
-    _id: documentId,
-    ...nodeData
-};
+           
             
 await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
 
 
 // Insert the document into the collection
-await executionRepository.insertOne(documentToInsert);
 
 // Then, push the constructed object to the array
 existingResults.push({ data: data });
