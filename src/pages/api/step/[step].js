@@ -34,20 +34,20 @@ export default async (req, res) => {
             existingResults = [];
         }
 
-try {        let previousNodeOutput = {};
-
+try {        
+    let previousNodeOutput = {};
+    let webhookNodeOutput = {};
+    
     if (nodes[stepIndex].data.type === 'trigger') {
-        // Assuming registerCron function returns some result or confirmation
-                                                                // TODO: Fix this shit, +1 is hard coded but should be getCronNodes => nodes.pop(0) so index 1 is now 0 but the rest of the indexes are present (delete index 0)
+        // Assuming registerCron function returns some result or confirmatio
+        // TODO: Fix this shit, +1 is hard coded but should be getCronNodes => nodes.pop(0) so index 1 is now 0 but the rest of the indexes are present (delete index 0)
         const cronResult = await registerCron(nodes[stepIndex], [nodes[stepIndex+1]], shortId, tenantId);
         existingResults.push({ cronResult });
-    }
-    else if (nodes[stepIndex].data.type === 'webhook') {
+    } else if (nodes[stepIndex].data.type === 'webhook') {
        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
-               await setWorkflowNodeState("w" + trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
+       await setWorkflowNodeState("w" + trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
 
-    } 
-        else if (stepIndex > 0) {
+    } else if (stepIndex > 0) {
 
         const previousNodeId = nodes[stepIndex - 1].id;
         previousNodeOutput = await getWorkflowNodeState(trigger_output);
@@ -59,35 +59,28 @@ try {        let previousNodeOutput = {};
          const webhookNodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, webhookNodeOutput);
          const webhookNodenodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.body, webhookNodeOutput);
 
-// Update the currentNode with the new inputParameters.url value
-nodes[stepIndex].data.inputParameters.url = nodeInput;
-nodes[stepIndex].data.inputParameters.body = nodeBody;
-
-// fucking webhook parser
-nodes[stepIndex].data.inputParameters.url = webhookNodeInput;
-nodes[stepIndex].data.inputParameters.body = webhookNodenodeBody;
-            //
-// Execute the HTTP Node with the updated currentNode
-const data = await executeHttpNode(nodes[stepIndex]);
-existingResults.push({ data: data });
-await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
-
-        } else {  
+        // Update the currentNode with the new inputParameters.url value
+        nodes[stepIndex].data.inputParameters.url = nodeInput;
+        nodes[stepIndex].data.inputParameters.body = nodeBody;
+        
+        // fucking webhook parser
+        nodes[stepIndex].data.inputParameters.url = webhookNodeInput;
+        nodes[stepIndex].data.inputParameters.body = webhookNodenodeBody;
+                    //
+        // Execute the HTTP Node with the updated currentNode
+        const data = await executeHttpNode(nodes[stepIndex]);
+        existingResults.push({ data: data });
+        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+    } else {  
+    //const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
+        const data = await executeHttpNode(nodes[stepIndex]);
+        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+    // Insert the document into the collection
+    // Then, push the constructed object to the array
+    existingResults.push({ data: data });
+    }
 
     
-//              const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
-
-              const data = await executeHttpNode(nodes[stepIndex]);
-           
-            
-await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
-
-
-// Insert the document into the collection
-
-// Then, push the constructed object to the array
-existingResults.push({ data: data });
-    }
 } catch (error) {
     // Log the error to the console
     console.error(`Error executing: ${error}`);
@@ -96,7 +89,7 @@ existingResults.push({ data: data });
            
 
 }
- await setWorkflowState(shortId, existingResults);
+         await setWorkflowState(shortId, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
@@ -111,12 +104,10 @@ existingResults.push({ data: data });
 // Function to insert a new execution and update the workflow with execution data
     try {
         const url = 'mongodb+srv://dylan:43VFMVJVJUFAII9g@cluster0.8phbhhb.mongodb.net/?retryWrites=true&w=majority';
-const dbName = 'test';
-const client = new MongoClient(url);
-await client.connect();
-
-const db = client.db(dbName);
-
+        const dbName = 'test';
+        const client = new MongoClient(url);
+        await client.connect();
+        const db = client.db(dbName);
         // Generate a shortId for the execution
 
         // New execution object
