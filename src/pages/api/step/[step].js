@@ -44,19 +44,29 @@ try {        let previousNodeOutput = {};
     }
     else if (nodes[stepIndex].data.type === 'webhook') {
        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
-        
+               await setWorkflowNodeState("w" + trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
+
     } 
         else if (stepIndex > 0) {
 
-             const previousNodeId = nodes[stepIndex - 1].id;
-            previousNodeOutput = await getWorkflowNodeState(trigger_output);
+        const previousNodeId = nodes[stepIndex - 1].id;
+        previousNodeOutput = await getWorkflowNodeState(trigger_output);
+        webhookNodeOutput = await getWorkflowNodeState("w"+trigger_output);
+
          const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
          const nodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.body, previousNodeOutput);
+///
+         const webhookNodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, webhookNodeOutput);
+         const webhookNodenodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.body, webhookNodeOutput);
 
 // Update the currentNode with the new inputParameters.url value
 nodes[stepIndex].data.inputParameters.url = nodeInput;
 nodes[stepIndex].data.inputParameters.body = nodeBody;
 
+// fucking webhook parser
+nodes[stepIndex].data.inputParameters.url = webhookNodeInput;
+nodes[stepIndex].data.inputParameters.body = webhookNodenodeBody;
+            //
 // Execute the HTTP Node with the updated currentNode
 const data = await executeHttpNode(nodes[stepIndex]);
 existingResults.push({ data: data });
