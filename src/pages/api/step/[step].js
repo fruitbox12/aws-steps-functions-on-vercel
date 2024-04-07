@@ -29,7 +29,7 @@ export default async (req, res) => {
     }
 
     try {
-        let existingResults = await getWorkflowState(shortId) || [];
+        let existingResults = await getWorkflowState(trigger_output) || [];
         if (!Array.isArray(existingResults)) {
             existingResults = [];
         }
