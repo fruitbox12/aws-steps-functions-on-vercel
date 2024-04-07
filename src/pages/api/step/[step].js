@@ -127,7 +127,6 @@ const db = client.db(dbName);
 
         // Retrieve updated execution data for the workflow
         const executionData = await executionRepository.find({ workflowShortId: shortId }).toArray();
-console.log(executionData)
         // Assuming 'workflow' is already defined or retrieved from the database
  
         // Respond with the updated workflow object
