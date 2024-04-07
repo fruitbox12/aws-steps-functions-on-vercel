@@ -50,7 +50,7 @@ try {
 const previousFuckingOutputs = [];
 
 // Iterate through the nodes array to retrieve state and replace variables
-for (let i = 0; i < nodes.length; i++) {
+for (let i = 0; i <= stepIndex-1; i++) {
     const previousNodeId = i > 0 ? nodes[i - 1].id : null;
     const previousNodeOutput = previousNodeId ? await getWorkflowNodeState(previousNodeId + trigger_output) : null;
     previousFuckingOutputs.push(previousNodeOutput);
