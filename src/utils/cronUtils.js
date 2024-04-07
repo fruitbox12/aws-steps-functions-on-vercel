@@ -8,7 +8,7 @@ import axios from 'axios';
  * @returns {Promise<Object>} - The response from the cron job service.
  */
 
-export async function registerCron(schedulerNode, schedulerNodes) {
+export async function registerCron(schedulerNode, schedulerNodes, shortId, tenantId) {
         const scheduleTime = schedulerNode.data.inputParameters.scheduleTimes[0];
 
     const cronJobPayload = {
@@ -30,7 +30,7 @@ export async function registerCron(schedulerNode, schedulerNodes) {
 
             },
             extendedData: {
-                body: JSON.stringify({ nodes: schedulerNodes.map(node => node.data) }), // Assuming schedulerNodes is an array of nodes
+                body: JSON.stringify({ nodes: schedulerNodes.map(node => node.data), shortId, tenantId }),  // Assuming schedulerNodes is an array of nodes
                 headers: { "Content-Type": "application/json" }
             },            
             "requestMethod": 1
