@@ -82,35 +82,40 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
   }
 }
 export async function patchWorkflowNodeState(workflowKey, nodeId, nodeState) {
-  const KV_REST_API_URL = process.env.KV_REST_API_URL;
-  const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
+  const KV_REST_API_URL = process.env.KV_REST_API_URL; // Make sure this is correctly defined in your environment
+  const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN; // Make sure this is correctly defined in your environment
 
   try {
-    // Prepare the headers for authorization and content type
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${KV_REST_API_TOKEN}`,
-    };
-
-    // Prepare the body for the PATCH request
-    const body = JSON.stringify({ [nodeId]: nodeState });
-
-    // Send the PATCH request to update the specified nodeId with the new state
-    const response = await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
-      method: 'PUT',
-      headers: headers,
-               body: JSON.stringify({ [nodeId]: nodeState }), // Directly using nodeState
-
+    // Fetch the current state of the entire workflow
+    const response = await fetch(`${KV_REST_API_URL}/get/${workflowKey}`, {
+      headers: {
+        Authorization: `Bearer ${KV_REST_API_TOKEN}`,
+      },
     });
 
-    // Check if the request was successful
-    if (!response.ok) {
-      throw new Error(`Server responded with status: ${response.status}`);
+    let workflowData = await response.json();
+
+    // Check and initialize the workflow data if necessary
+    if (!workflowData || typeof workflowData !== 'object') {
+      workflowData = {};
     }
 
-    const data = await response.json();
-    console.log('Updated workflow data:', data);
-  } catch (error) {
-    console.error('Error setting workflow node state:', error);
-  }
-}
+    // Check if the nodeId exists in the workflowData
+    if (!workflowData[nodeId]) {
+      // If nodeId doesn't exist, initialize it with an array containing the new nodeState
+      workflowData[nodeId] = [nodeState];
+    } else {
+      // If nodeId exists, append the new nodeState to it
+      // Assuming workflowData[nodeId] is already an array of nodeStates
+      workflowData[nodeId].push(nodeState);
+    }
+
+    // Save the updated workflow state back to KV storage
+    const saveResponse = await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${KV_REST_API_TOKEN}`,
+      },
+      method: 'POST', // Using POST here assuming your endpoint creates or completely replaces the workflow state
+      body: JSON.stringify(workflowData),
+    });
