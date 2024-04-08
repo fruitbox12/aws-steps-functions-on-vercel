@@ -57,19 +57,20 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
 
     // Assuming nodeState is already structured correctly, directly assign it
     // If nodeId exists, append the new state; otherwise, initialize it with the provided state
-    if (!workflowData[nodeId]) {
-      workflowData[nodeId] = [{data: nodeState}];
-    } else {
-      workflowData[nodeId].push({"result": { "result": null, nodeId: nodeState}});
-    }
-
+if (!workflowData[nodeId]) {
+  // If not, initialize it with the structure including a 'result' object that contains an array for 'results'
+  workflowData[nodeId] = {"result": {"result": [nodeState]}};
+} else {
+  // If it exists, append the new state directly to the 'result.result' array
+  workflowData[nodeId].result.result.push(nodeState);
+}
     // Save the updated workflow state back to KV storage
     await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${KV_REST_API_TOKEN}`,
       },
-      method: 'POST',
+      method: 'PATCH',
       body:  JSON.stringify({
         result: null,
         [nodeId]: nodeState
