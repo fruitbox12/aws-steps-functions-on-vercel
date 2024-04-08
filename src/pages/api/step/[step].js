@@ -1,6 +1,6 @@
 
 import { executeHttpNode } from '../../../utils/httpRequestExecutor';
-import { getWorkflowState,setWorkflowNodeState, patchWorkflowNodeState, getWorkflowNodeState, setWorkflowState } from '../../../utils/kvStorage';
+import { getWorkflowState,setWorkflowNodeState,getWorkflowNodeState, setWorkflowState } from '../../../utils/kvStorage';
 import NextCors from 'nextjs-cors';
 import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
 import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
@@ -29,7 +29,7 @@ export default async (req, res) => {
     }
 
     try {
-        let existingResults = [];
+        let existingResults = await getWorkflowState(trigger_output) || [];
         if (!Array.isArray(existingResults)) {
             existingResults = [];
         }
@@ -43,7 +43,7 @@ try {        let previousNodeOutput = {};
         existingResults.push({ cronResult });
     }
     else if (nodes[stepIndex].data.type === 'webhook') {
-       await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, webhook_body)
+       await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
         
     } 
         else if (stepIndex > 0) {
@@ -60,7 +60,7 @@ nodes[stepIndex].data.inputParameters.body = nodeBody;
 // Execute the HTTP Node with the updated currentNode
 const data = await executeHttpNode(nodes[stepIndex]);
 existingResults.push({ data: data });
-await patchWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
 
         } else {  
 
@@ -70,7 +70,7 @@ await patchWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data 
               const data = await executeHttpNode(nodes[stepIndex]);
            
             
-await patchWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
 
 
 // Insert the document into the collection
@@ -86,6 +86,7 @@ existingResults.push({ data: data });
            
 
 }
+ await setWorkflowState(shortId, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
@@ -125,7 +126,10 @@ const db = client.db(dbName);
         await executionRepository.insertOne(execution);
 
         // Retrieve updated execution data for the workflow
-     
+        const executionData = await executionRepository.find({ workflowShortId: shortId }).toArray();
+        // Assuming 'workflow' is already defined or retrieved from the database
+ 
+        // Respond with the updated workflow object
     } catch (error) {
         console.error('Error handling execution:', error);
         // Handle error, e.g., return an error response
