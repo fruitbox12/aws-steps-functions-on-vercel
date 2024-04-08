@@ -1,8 +1,8 @@
 // utils/kvStorage.js
 import axios from 'axios';
 
-const KV_STORAGE_BASE_URL = "https://renewing-heron-48789.kv.vercel-storage.com";
-const AUTH_HEADER = { Authorization: `Bearer Ab6VASQgZmYxOTk0ZjUtN2JlNS00MDJjLThkN2ItZjg1ZmE5ZGNhZTUwNDJhMzU2MjQyMjExNDJkNmJmYWFjYjNmYmU4NDlkY2U=` };
+const KV_STORAGE_BASE_URL = process.env.KV_REST_API_URL;
+const AUTH_HEADER = { Authorization: process.env.KV_REST_API_TOKEN };
 
 export async function getWorkflowState(key) {
   try {
