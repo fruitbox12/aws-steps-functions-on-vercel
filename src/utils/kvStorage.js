@@ -119,4 +119,15 @@ export async function patchWorkflowNodeState(workflowKey, nodeId, nodeState) {
       method: 'POST', // Using POST here assuming your endpoint creates or completely replaces the workflow state
       body: JSON.stringify(workflowData),
     });
+     // Check the response from the save operation
+    if (!saveResponse.ok) {
+      // Handle errors, such as by logging or throwing an exception
+      throw new Error(`Failed to save workflow state, server responded with status: ${saveResponse.status}`);
+    }
+
+    const data = await saveResponse.json();
+    console.log('Updated workflow data:', data);
+  } catch (error) {
+    console.error('Error setting workflow node state:', error);
   }
+}
