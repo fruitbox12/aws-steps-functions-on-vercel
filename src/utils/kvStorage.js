@@ -117,7 +117,7 @@ export async function patchWorkflowNodeState(workflowKey, nodeId, nodeState) {
         Authorization: `Bearer ${KV_REST_API_TOKEN}`,
       },
       method: 'POST', // Using POST here assuming your endpoint creates or completely replaces the workflow state
-      body: JSON.stringify(workflowData),
+      body: workflowData,
     });
      // Check the response from the save operation
     if (!saveResponse.ok) {
