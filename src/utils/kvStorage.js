@@ -119,3 +119,4 @@ export async function patchWorkflowNodeState(workflowKey, nodeId, nodeState) {
       method: 'POST', // Using POST here assuming your endpoint creates or completely replaces the workflow state
       body: JSON.stringify(workflowData),
     });
+  }
