@@ -97,7 +97,7 @@ export async function patchWorkflowNodeState(workflowKey, nodeId, nodeState) {
 
     // Send the PATCH request to update the specified nodeId with the new state
     const response = await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
-      method: 'PATCH',
+      method: 'PUT',
       headers: headers,
       body: body,
     });
