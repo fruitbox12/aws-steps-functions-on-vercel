@@ -86,7 +86,6 @@ existingResults.push({ data: data });
            
 
 }
- await setWorkflowState(shortId, existingResults);
 
         if (stepIndex < stepEnd) {
             const nextStepIndex = stepIndex + 1;
@@ -126,10 +125,7 @@ const db = client.db(dbName);
         await executionRepository.insertOne(execution);
 
         // Retrieve updated execution data for the workflow
-        const executionData = await executionRepository.find({ workflowShortId: shortId }).toArray();
-        // Assuming 'workflow' is already defined or retrieved from the database
- 
-        // Respond with the updated workflow object
+     
     } catch (error) {
         console.error('Error handling execution:', error);
         // Handle error, e.g., return an error response
