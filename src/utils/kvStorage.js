@@ -71,11 +71,7 @@ if (!workflowData[nodeId]) {
         Authorization: `Bearer ${KV_REST_API_TOKEN}`,
       },
       method: 'PATCH',
-      body:  JSON.stringify({
-        result: null,
-        [nodeId]: nodeState
-
-    }),
+      body: JSON.stringify(workflowData),
     })
     .then(response => response.json())
     .then(data => console.log('Updated workflow data:', data));
