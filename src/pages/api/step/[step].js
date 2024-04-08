@@ -1,6 +1,6 @@
 
 import { executeHttpNode } from '../../../utils/httpRequestExecutor';
-import { getWorkflowState,setWorkflowNodeState,getWorkflowNodeState, setWorkflowState } from '../../../utils/kvStorage';
+import { getWorkflowState,setWorkflowNodeState, patchWorkflowNodeState, getWorkflowNodeState, setWorkflowState } from '../../../utils/kvStorage';
 import NextCors from 'nextjs-cors';
 import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
 import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
@@ -60,7 +60,7 @@ nodes[stepIndex].data.inputParameters.body = nodeBody;
 // Execute the HTTP Node with the updated currentNode
 const data = await executeHttpNode(nodes[stepIndex]);
 existingResults.push({ data: data });
-await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+await patchWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
 
         } else {  
 
@@ -70,7 +70,7 @@ await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]
               const data = await executeHttpNode(nodes[stepIndex]);
            
             
-await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+await patchWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
 
 
 // Insert the document into the collection
