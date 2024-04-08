@@ -59,7 +59,7 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
     if (!workflowData[nodeId]) {
       workflowData[nodeId] = [{data: nodeState}];
     } else {
-      workflowData[nodeId].push({"result": { "result": null, nodeId: nodeState}});
+      workflowData[nodeId].push({"result": { "result": null, [nodeId]: nodeState}});
     }
 
     // Save the updated workflow state back to KV storage
