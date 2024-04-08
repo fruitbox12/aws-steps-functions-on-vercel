@@ -36,39 +36,46 @@ export async function getWorkflowNodeState(workflowKey) {
   }
 }
 
-// Updates the state of a specific node within a workflow
 export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
   const KV_REST_API_URL = process.env.KV_REST_API_URL;
   const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
 
   try {
+    // Fetch the current state of the workflow
     const response = await fetch(`${KV_REST_API_URL}/get/${workflowKey}`, {
-      headers: {
-        Authorization: `Bearer ${KV_REST_API_TOKEN}`,
-      },
+      headers: { Authorization: `Bearer ${KV_REST_API_TOKEN}` },
     });
 
     let workflowData = await response.json();
-    let method = 'POST'; // Default to POST for creating new data
+    let method;
 
-    if (!workflowData || typeof workflowData !== 'object') {
-      workflowData = {};
+    // Determine if the workflow needs to be created or updated
+    if (!workflowData || typeof workflowData !== 'object' || Object.keys(workflowData).length === 0) {
+      method = 'POST'; // No existing workflowData implies a need to create it
+      workflowData = {}; // Initialize to an empty object for new data
     } else {
-      // If workflowData exists and is an object, check for nodeId
-      if (workflowData.hasOwnProperty(nodeId)) {
-        // If nodeId exists, we're updating, so use PATCH
-        method = 'PATCH';
+      method = 'PATCH'; // Existing data implies an update
+    }
+
+    // Initialize or update the specific nodeId with nodeState within the workflow
+    if (!workflowData[nodeId]) {
+      // If nodeId doesn't exist, initialize it with an outer structure
+      workflowData[nodeId] = JSON.stringify({ result: null, [nodeId]: [{ data: nodeState }] });
+    } else {
+      // If nodeId exists, parse its content and update
+      let existingNodeData = JSON.parse(workflowData[nodeId]);
+
+      // Check if the nodeId entry is correctly formatted and has an array to push to; if not, create it
+      if (!existingNodeData[nodeId] || !Array.isArray(existingNodeData[nodeId])) {
+        existingNodeData[nodeId] = [];
       }
-    }
 
-    // Prepare the nodeState structure
-    let nodeData = workflowData[nodeId] ? JSON.parse(workflowData[nodeId]) : {result: null};
-    if (!nodeData[nodeId]) {
-      nodeData[nodeId] = [{ data: nodeState }];
-    } else {
-      nodeData[nodeId].push({ data: nodeState });
+      // Add the new nodeState to the nodeId array
+      existingNodeData[nodeId].push({ data: nodeState });
+
+      // Re-stringify the updated node data
+      workflowData[nodeId] = JSON.stringify(existingNodeData);
     }
-    workflowData[nodeId] = JSON.stringify(nodeData); // Update the nodeState in the workflow
 
     // Save the updated workflow state back to KV storage
     await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
@@ -85,4 +92,5 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
     console.error('Error setting workflow node state:', error);
   }
 }
+
 
