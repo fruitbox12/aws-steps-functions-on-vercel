@@ -45,44 +45,51 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
       headers: { Authorization: `Bearer ${KV_REST_API_TOKEN}` },
     });
 
-    let workflowData = await response.json();
-    let method = 'PATCH'; // Assume update by default, as `POST` is generally for creation
+    let workflowData = await response.json(); // Make sure this JSON.parse() is safe by checking response status
+    let method = 'PATCH'; // Default to PATCH, assuming you're updating existing data
 
-    // Check if workflowData is not an object or is empty, indicating a new workflow needs to be created
     if (!workflowData || typeof workflowData !== 'object' || Object.keys(workflowData).length === 0) {
+      method = 'POST'; // Switch to POST if creating new data
       workflowData = {}; // Initialize for new data
-      method = 'POST'; // Use `POST` for creating the workflow
     }
 
-    // Check and prepare the nodeData
+    // Initialize or update nodeId with nodeState within the workflow
+    let nodeData;
     if (!workflowData[nodeId]) {
-      // If nodeId doesn't exist, create an entry for it
-      workflowData[nodeId] = { result: null, [nodeId]: [{ data: nodeState }] };
+      nodeData = { result: null, [nodeId]: [{ data: nodeState }] };
     } else {
-      // If nodeId exists, update it
-      if (typeof workflowData[nodeId] === 'string') {
-        // Parse if it's a stringified JSON
-        workflowData[nodeId] = JSON.parse(workflowData[nodeId]);
+      // Safely parse the existing or default nodeData
+      try {
+        nodeData = JSON.parse(workflowData[nodeId]) || { result: null };
+      } catch (parseError) {
+        console.error('Error parsing existing nodeData:', parseError);
+        nodeData = { result: null }; // Default to a safe value
       }
-      if (!workflowData[nodeId][nodeId]) {
-        workflowData[nodeId][nodeId] = [];
+
+      if (!Array.isArray(nodeData[nodeId])) {
+        nodeData[nodeId] = [];
       }
-      workflowData[nodeId][nodeId].push({ data: nodeState }); // Push the new nodeState
+      nodeData[nodeId].push({ data: nodeState });
     }
 
-    // Important: Serialize the entire `nodeId` data, not just its contents
-    workflowData[nodeId] = JSON.stringify(workflowData[nodeId]);
+    // Always re-stringify the nodeData before saving
+    workflowData[nodeId] = JSON.stringify(nodeData);
 
     // Save the updated workflow state back to KV storage
-    await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
+    const saveResponse = await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${KV_REST_API_TOKEN}`,
       },
       method: method,
       body: JSON.stringify(workflowData),
-    }).then(response => response.json())
-      .then(data => console.log('Updated workflow data:', data));
+    });
+
+    if (!saveResponse.ok) {
+      throw new Error(`Failed to save workflow state, server responded with status: ${saveResponse.status}`);
+    }
+
+    console.log('Updated workflow data successfully');
   } catch (error) {
     console.error('Error setting workflow node state:', error);
   }
