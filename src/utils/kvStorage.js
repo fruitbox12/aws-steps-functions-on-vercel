@@ -81,4 +81,35 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
     console.error('Error setting workflow node state:', error);
   }
 }
+export async function patchWorkflowNodeState(workflowKey, nodeId, nodeState) {
+  const KV_REST_API_URL = process.env.KV_REST_API_URL;
+  const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
 
+  try {
+    // Prepare the headers for authorization and content type
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${KV_REST_API_TOKEN}`,
+    };
+
+    // Prepare the body for the PATCH request
+    const body = JSON.stringify({ [nodeId]: nodeState });
+
+    // Send the PATCH request to update the specified nodeId with the new state
+    const response = await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
+      method: 'PATCH',
+      headers: headers,
+      body: body,
+    });
+
+    // Check if the request was successful
+    if (!response.ok) {
+      throw new Error(`Server responded with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Updated workflow data:', data);
+  } catch (error) {
+    console.error('Error setting workflow node state:', error);
+  }
+}
