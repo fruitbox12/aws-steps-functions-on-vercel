@@ -99,7 +99,8 @@ export async function patchWorkflowNodeState(workflowKey, nodeId, nodeState) {
     const response = await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
       method: 'PUT',
       headers: headers,
-      body: body,
+               body: JSON.stringify({ [nodeId]: nodeState }), // Directly using nodeState
+
     });
 
     // Check if the request was successful
