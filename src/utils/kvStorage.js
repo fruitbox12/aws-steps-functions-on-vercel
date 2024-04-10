@@ -38,11 +38,11 @@ export async function getWorkflowNodeState(workflowKey) {
 
 // Updates the state of a specific node within a workflow
 export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
-  const KV_REST_API_URL = process.env.KV_REST_API_URL; // Make sure this is correctly defined in your environment
-  const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN; // Make sure this is correctly defined in your environment
+  const KV_REST_API_URL = process.env.KV_REST_API_URL; 
+  const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN; 
 
   try {
-    // First, get the current state of the entire workflow
+    // Fetch the current state of the entire workflow
     const response = await fetch(`${KV_REST_API_URL}/get/${workflowKey}`, {
       headers: {
         Authorization: `Bearer ${KV_REST_API_TOKEN}`,
@@ -50,35 +50,35 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
     });
     let workflowData = await response.json();
 
-    // If the workflow doesn't exist yet or isn't an object, initialize it
-    if (!workflowData || typeof workflowData !== 'object') {
-      workflowData = {};
-    }
+    // Ensure there's a "result" object to work with, parse if it exists or initialize
+    let currentWorkflowState = workflowData && workflowData.result ? JSON.parse(workflowData.result) : {};
 
-    // Assuming nodeState is already structured correctly, directly assign it
-    // If nodeId exists, append the new state; otherwise, initialize it with the provided state
-    if (!workflowData[nodeId]) {
-      workflowData[nodeId] = [{data: nodeState}];
-    } else {
-      workflowData[nodeId].push({"result": { "result": null, nodeId: nodeState}});
-    }
+    // Update or Initialize nodeId with new state
+    // This places or replaces the nodeId state within the currentWorkflowState object
+    currentWorkflowState[nodeId] = nodeState;
+
+    // Prepare the updated workflow data for saving
+    const updatedWorkflowData = {
+      result: JSON.stringify({
+        result: null, // Keeping the inner result as null based on your requirement
+        ...currentWorkflowState, // Spreading the currentWorkflowState to include all nodeId states
+      }),
+    };
 
     // Save the updated workflow state back to KV storage
     await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${KV_REST_API_TOKEN}`,
       },
-      method: 'POST',
-      body:  JSON.stringify({
-        result: null,
-        [nodeId]: nodeState
-
-    }),
+      body: JSON.stringify(updatedWorkflowData),
     })
     .then(response => response.json())
-    .then(data => console.log('Updated workflow data:', data));
+    .then(data => console.log('Updated workflow data:', data))
+    .catch(error => console.error('Error in updating workflow data:', error));
   } catch (error) {
     console.error('Error setting workflow node state:', error);
   }
 }
+
