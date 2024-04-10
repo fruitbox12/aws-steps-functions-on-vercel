@@ -59,7 +59,6 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
 
     // Prepare the updated workflow data for saving
     const result = {
-      result: null,
               ...currentWorkflowState, // Spreading the currentWorkflowState to include all nodeId states
     };
 
@@ -70,10 +69,10 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${KV_REST_API_TOKEN}`,
       },
-      body: { "result": JSON.stringify({
+      body: JSON.stringify({
               result: null,
               ...currentWorkflowState, // Spreading the currentWorkflowState to include all nodeId states
-    }) }
+    })
     })
     .then(response => response.json())
     .then(data => console.log('Updated workflow data:', data))
