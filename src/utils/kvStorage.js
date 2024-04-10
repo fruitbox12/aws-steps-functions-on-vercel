@@ -66,7 +66,7 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
     };
 
     // Save the updated workflow state back to KV storage
-    await fetch(`${KV_REST_API_URL}/set/${workflowKey}/${nodeId}`, {
+    await fetch(`${KV_REST_API_URL}/set/${workflowKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -81,4 +81,3 @@ export async function setWorkflowNodeState(workflowKey, nodeId, nodeState) {
     console.error('Error setting workflow node state:', error);
   }
 }
-
