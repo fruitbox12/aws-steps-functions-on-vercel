@@ -46,23 +46,41 @@ try {        let previousNodeOutput = {};
        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
         
     } 
-        else if (stepIndex > 0) {
+else if (stepIndex > 0) {
+    // Initialize an object to accumulate states from all previous nodes
+    let accumulatedStates = {};
 
-             const previousNodeId = nodes[stepIndex - 1].id;
-            previousNodeOutput = await getWorkflowNodeState(trigger_output);
-         const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
-         const nodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.body, previousNodeOutput);
+    // Loop through each node up to the current stepIndex to fetch and accumulate states
+    for (let i = 0; i < stepIndex; i++) {
+        const nodeId = nodes[i].id;
+        try {
+            // Fetch and store the state for each node up to the current stepIndex
+            const nodeState = await getWorkflowNodeState(`${trigger_output}/${nodeId}`);
+            // Assuming getWorkflowNodeState returns the state object directly; adjust as necessary
+            accumulatedStates[nodeId] = nodeState;
+        } catch (error) {
+            console.error(`Error fetching state for node ${nodeId}:`, error);
+            // Handle or log the error as appropriate
+        }
+    }
 
-// Update the currentNode with the new inputParameters.url value
-nodes[stepIndex].data.inputParameters.url = nodeInput;
-nodes[stepIndex].data.inputParameters.body = nodeBody;
+    // Extract the state of the immediate previous node as before
+    const previousNodeId = nodes[stepIndex - 1].id;
+    previousNodeOutput = accumulatedStates[previousNodeId]; // Updated to use accumulatedStates
 
-// Execute the HTTP Node with the updated currentNode
-const data = await executeHttpNode(nodes[stepIndex]);
-existingResults.push({ data: data });
-await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+    // Replace template variables in the current node's URL and body based on accumulatedStates
+    const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
+    const nodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.body, previousNodeOutput);
 
-        } else {  
+    // Update the currentNode with the new inputParameters.url value
+    nodes[stepIndex].data.inputParameters.url = nodeInput;
+    nodes[stepIndex].data.inputParameters.body = nodeBody;
+
+    // Execute the HTTP Node with the updated currentNode
+    const data = await executeHttpNode(nodes[stepIndex]);
+    existingResults.push({ data: data });
+    await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+} else {  
 
     
 //              const data = await webhookHttpNode(nodes[stepIndex], nodes, existingResults[existingResults.length - 1]);
