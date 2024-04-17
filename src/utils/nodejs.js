@@ -11,7 +11,7 @@ export async function executeNodeJs(node) {
 
     let data;
     try {
-const data = (method === 'post' || method === 'put') ? {
+ data = (method === 'post' || method === 'put') ? {
     code: JSON.parse(node.data?.inputParameters?.code || '{}'),
     external: JSON.parse(node.data?.inputParameters?.external || '{}')
 } : undefined;
