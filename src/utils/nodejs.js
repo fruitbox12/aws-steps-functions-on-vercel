@@ -11,10 +11,10 @@ export async function executeNodeJs(node) {
 
     let data;
     try {
- data = (method === 'post' || method === 'put') ? {
+ data = {
     code: JSON.parse(node.data?.inputParameters?.code || '{}'),
     external: JSON.parse(node.data?.inputParameters?.external || '{}')
-} : undefined;
+}
     } catch (error) {
         console.error(`Error parsing JSON body for node ${node.id}:`, error);
     }
