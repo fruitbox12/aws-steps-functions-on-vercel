@@ -5,6 +5,7 @@ import NextCors from 'nextjs-cors';
 import { registerCron } from '../../../utils/cronUtils'; // Assuming this utility is correctly implemented
 import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
 import { replaceTemplateVariables, replaceTemplateBody } from '../../../utils/regex'; // Assuming this utility is correctly implemented
+import { executeDiscordNode } from '../../../utils/Discord'; // Assuming this utility is correctly implemented
 
 const { MongoClient } = require('mongodb');
 
@@ -44,6 +45,22 @@ try {        let previousNodeOutput = {};
     }
     else if (nodes[stepIndex].data.type === 'webhook') {
        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
+        
+    } 
+        else if (nodes[stepIndex].data.type === 'discord') {
+  const previousNodeId = nodes[stepIndex - 1].id;
+            previousNodeOutput = await getWorkflowNodeState(trigger_output);
+         const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.url, previousNodeOutput);
+         const nodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.content, previousNodeOutput);
+
+// Update the currentNode with the new inputParameters.url value
+nodes[stepIndex].data.inputParameters.url = nodeInput;
+nodes[stepIndex].data.inputParameters.content = nodeBody;
+
+// Execute the HTTP Node with the updated currentNode
+const data = await executeDiscordNode(nodes[stepIndex]);
+existingResults.push({ data: data });
+await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
         
     } 
         else if (stepIndex > 0) {
