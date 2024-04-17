@@ -6,6 +6,7 @@ import { registerCron } from '../../../utils/cronUtils'; // Assuming this utilit
 import { webhookHttpNode } from '../../../utils/webhookUtil'; // Assuming this utility is correctly implemented
 import { replaceTemplateVariables, replaceTemplateBody } from '../../../utils/regex'; // Assuming this utility is correctly implemented
 import { executeDiscordNode } from '../../../utils/Discord'; // Assuming this utility is correctly implemented
+import { executeNodeJs } from '../../../utils/nodejs'; // Assuming this utility is correctly implemented
 
 const { MongoClient } = require('mongodb');
 
@@ -59,6 +60,22 @@ nodes[stepIndex].data.inputParameters.content = nodeBody;
 
 // Execute the HTTP Node with the updated currentNode
 const data = await executeDiscordNode(nodes[stepIndex]);
+existingResults.push({ data: data });
+await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
+        
+    } 
+             else if (nodes[stepIndex].data.name === 'nodeJS') {
+  const previousNodeId = nodes[stepIndex - 1].id;
+  previousNodeOutput = await getWorkflowNodeState(trigger_output);
+         const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.code, previousNodeOutput);
+         const nodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.external, previousNodeOutput);
+
+// Update the currentNode with the new inputParameters.url value
+nodes[stepIndex].data.inputParameters.code = nodeInput;
+nodes[stepIndex].data.inputParameters.external = nodeBody;
+
+// Execute the HTTP Node with the updated currentNode
+const data = await executeNodeJs(nodes[stepIndex]);
 existingResults.push({ data: data });
 await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: data }]);
         
