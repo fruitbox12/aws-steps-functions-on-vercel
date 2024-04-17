@@ -49,6 +49,13 @@ try {        let previousNodeOutput = {};
     } 
         else if (nodes[stepIndex].data.name === 'discord') {
   const previousNodeId = nodes[stepIndex - 1].id;
+  previousNodeOutput = await getWorkflowNodeState(trigger_output);
+         const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.webhookUrl, previousNodeOutput);
+         const nodeBody = replaceTemplateBody(nodes[stepIndex].data?.inputParameters?.content, previousNodeOutput);
+
+// Update the currentNode with the new inputParameters.url value
+nodes[stepIndex].data.inputParameters.webhookUrl = nodeInput;
+nodes[stepIndex].data.inputParameters.content = nodeBody;
 
 // Execute the HTTP Node with the updated currentNode
 const data = await executeDiscordNode(nodes[stepIndex]);
