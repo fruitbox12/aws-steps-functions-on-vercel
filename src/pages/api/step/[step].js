@@ -47,7 +47,7 @@ try {        let previousNodeOutput = {};
        await setWorkflowNodeState(trigger_output, nodes[stepIndex].id, [{ data: webhook_body }])
         
     } 
-        else if (nodes[stepIndex].data.type === 'discord') {
+        else if (nodes[stepIndex].data.name === 'discord') {
   const previousNodeId = nodes[stepIndex - 1].id;
             previousNodeOutput = await getWorkflowNodeState(trigger_output);
          const nodeInput = replaceTemplateVariables(nodes[stepIndex].data?.inputParameters?.webhookUrl, previousNodeOutput);
