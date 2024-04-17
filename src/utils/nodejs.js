@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function executeNodeJs(node) {
     const method = "POST";
-    const url = https://js-compiler-api-zeta.vercel.app/api/v1/compiler;
+    const url = "https://js-compiler-api-zeta.vercel.app/api/v1/compiler";
     const headersArray = node.data?.inputParameters?.headers || [];
     const headers = headersArray.reduce((acc, header) => {
         if (header.key && header.value) acc[header.key] = header.value;
