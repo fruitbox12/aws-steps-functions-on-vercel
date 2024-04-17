@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-export async function executeDiscordNode(inputParameters) {
-    try {
+export async function executeDiscordNode(node) {
+    try {    
         // Implement the logic to send message to Discord webhook here
-        const message = inputParameters.content;
-        const webhookUrl = inputParameters.webhookUrl + "?wait=true";
+        const message = node.data?.inputParameters?.content;
+        const webhookUrl = node.data?.inputParameters?.webhookUrl + "?wait=true";
         // Construct the message body
         const body = {
             content: message
