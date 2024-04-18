@@ -9,16 +9,11 @@ export async function executeNodeJs(node) {
         return acc;
     }, {});
 
-    let data;
-    try {
- data = {
+   
+ const data = {
     code: JSON.parse(node.data?.inputParameters?.code || '{}'),
     external: JSON.parse(node.data?.inputParameters?.external || '{}')
 }
-    } catch (error) {
-        console.error(`Error parsing JSON body for node ${node.id}:`, error);
-    }
-
     const axiosConfig = {
         method,
         url,
