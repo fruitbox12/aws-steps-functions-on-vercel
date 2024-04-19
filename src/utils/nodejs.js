@@ -11,8 +11,8 @@ export async function executeNodeJs(node) {
 
    
  const data = {
-    code: JSON.stringify(node.data?.inputParameters?.code || '{}'),
-    external: JSON.stringify(node.data?.inputParameters?.external || '{}')
+    code: JSON.parse(node.data?.inputParameters?.code || '{}'),
+    external: JSON.parse(node.data?.inputParameters?.external || '{}')
 }
     const axiosConfig = {
         method,
