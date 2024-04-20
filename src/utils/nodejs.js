@@ -12,7 +12,7 @@ export async function executeNodeJs(node) {
    
  const data = {
     code: JSON.parse(JSON.stringify(node.data?.inputParameters?.code) || '{}'),
-    external: node.data?.inputParameters?.external || '{}'
+    external: JSON.stringify(node.data?.inputParameters?.external) || '{}'
 }
     const axiosConfig = {
         method,
