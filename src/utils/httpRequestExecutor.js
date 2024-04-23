@@ -16,40 +16,30 @@ export async function executeHttpNode(node) {
         console.error(`Error parsing JSON body for node ${node.id}:`, error);
     }
 
+    // Set responseType conditionally based on node.data.responseType
     const axiosConfig = {
         method,
         url,
         headers,
-        data
+        data,
+        responseType: node.data.responseType === "base64" ? 'arraybuffer' : 'json'  // Set responseType to 'arraybuffer' only if needed
     };
 
     try {
         const response = await axios(axiosConfig);
-        console.log(`Node ${node.id} executed with result:`, response.data);
+        console.log(`Node ${node.id} executed with result:`, response);
 
-        // Initialize a variable to hold the extracted content
         let extractedContent = "";
 
-        // Check if the response includes 'choices' and has at least one choice
-        if (response.data.choices && response.data.choices.length > 0) {
-            const firstChoice = response.data.choices[0];
-
-            // Assuming 'content' is directly on the choice object
-            if (firstChoice.content) {
-                console.log(`Content from the result:`, firstChoice.content);
-                extractedContent = firstChoice.content;
-            } else if (firstChoice.message && typeof firstChoice.message === 'object' && firstChoice.message.content) {
-                // If 'content' is nested within a 'message' object
-                console.log(`Content from the result:`, firstChoice.message.content);
-                extractedContent = firstChoice.message.content;
-            } else {
-                console.log(`No content or unexpected format in the first choice.`);
-            }
-        } else {
-            console.log(`No choices available in the response.`);
+        // If the response is expected to be base64 and the data is received as a buffer
+        if (node.data.responseType === "base64" && response.data) {
+            // Convert buffer to base64 string
+            const base64Content = Buffer.from(response.data, 'binary').toString('base64');
+            console.log(`Base64 content:`, base64Content);
+            extractedContent = base64Content;
+            response.data = base64Content;  // Modify response.data to hold the base64 content
         }
 
-        // Return or process the extracted content as needed
         return response.data;
     } catch (error) {
         console.error(`Error executing HTTP node ${node.id}:`, error);
