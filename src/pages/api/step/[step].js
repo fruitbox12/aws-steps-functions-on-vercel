@@ -9,8 +9,10 @@ import { executeDiscordNode } from '../../../utils/Discord'; // Assuming this ut
 import { executeNodeJs } from '../../../utils/nodejs'; // Assuming this utility is correctly implemented
 
 const { MongoClient } = require('mongodb');
-export const maxDuration = 300; // This function can run for a maximum of 5 seconds
-
+export const config = {
+  maxDuration: 300,
+};
+ 
 export default async (req, res) => {
     await NextCors(req, res, {
         methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
