@@ -27,24 +27,23 @@ export async function executeHttpNode(node) {
         const response = await axios(axiosConfig);
         console.log(`Node ${node.id} executed with result:`, response.data);
 
-        // Initialize a variable to hold the extracted content
         let extractedContent = "";
-if (node.data.responseType == "base64" && response.data) {
-    const decodedContent = Buffer.from( response.data, 'base64').toString('utf8');
-    console.log(`Decoded content:`, decodedContent);
-    extractedContent = decodedContent;
-    response.data = extractedContent
-}
-        // Check if the response includes 'choices' and has at least one choice
+
+        // Handling base64 encoded data if responseType indicates so
+        if (node.data.responseType === "base64" && response.data && typeof response.data === 'string') {
+            const decodedContent = Buffer.from(response.data, 'base64').toString('utf8');
+            console.log(`Decoded content:`, decodedContent);
+            extractedContent = decodedContent;
+            response.data = extractedContent; // Modify response.data only if you're sure it won't affect other logic
+        }
+
+        // Additional response handling
         if (response.data.choices && response.data.choices.length > 0) {
             const firstChoice = response.data.choices[0];
-
-            // Assuming 'content' is directly on the choice object
             if (firstChoice.content) {
                 console.log(`Content from the result:`, firstChoice.content);
                 extractedContent = firstChoice.content;
             } else if (firstChoice.message && typeof firstChoice.message === 'object' && firstChoice.message.content) {
-                // If 'content' is nested within a 'message' object
                 console.log(`Content from the result:`, firstChoice.message.content);
                 extractedContent = firstChoice.message.content;
             } else {
@@ -54,7 +53,6 @@ if (node.data.responseType == "base64" && response.data) {
             console.log(`No choices available in the response.`);
         }
 
-        // Return or process the extracted content as needed
         return response.data;
     } catch (error) {
         console.error(`Error executing HTTP node ${node.id}:`, error);
