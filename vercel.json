@@ -1,8 +1,7 @@
 {
   "functions": {
-   
-    "src/api/*.js": {
-      "maxDuration": 300 // You must prefix functions in the src directory with /src/
+    "/src/api/*.js": {  
+      "maxDuration": 300
     }
   }
 }
