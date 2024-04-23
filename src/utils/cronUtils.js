@@ -20,10 +20,10 @@ export async function registerCron(schedulerNode, schedulerNodes, shortId, tenan
     enabled: true, // Assuming this should be a boolean
     saveResponses: true,
     schedule: {
-        timezone: "Europe/Berlin", // Static value; adjust as necessary
+        timezone: schedulerNode.data.inputParameters.timezone, // Static value; adjust as necessary
         expiresAt: 0, // Static value; adjust as necessary
-        hours: [scheduleTime.hour], // Dynamically set from schedulerNode
-        mdays: [scheduleTime.dayOfMonth], // Dynamically set from schedulerNode
+        hours: [schedulerNode.data.inputParameters.hour], // Dynamically set from schedulerNode
+        mdays: [schedulerNode.data.inputParameters.dayOfMonth], // Dynamically set from schedulerNode
         minutes: [scheduleTime.minute], // Dynamically set from schedulerNode
         months: [-1], // Assuming every month, adjust if needed
         wdays: scheduleTime.weekday ? [parseInt(scheduleTime.weekday, 10)] : [-1] // Dynamically set from schedulerNode, with fallback to every day of the week
