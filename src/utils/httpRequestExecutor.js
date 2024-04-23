@@ -29,7 +29,12 @@ export async function executeHttpNode(node) {
 
         // Initialize a variable to hold the extracted content
         let extractedContent = "";
-
+if (node.data.responseType == "base64" && response.data) {
+    const decodedContent = Buffer.from( response.data, 'base64').toString('utf8');
+    console.log(`Decoded content:`, decodedContent);
+    extractedContent = decodedContent;
+    response.data = extractedContent
+}
         // Check if the response includes 'choices' and has at least one choice
         if (response.data.choices && response.data.choices.length > 0) {
             const firstChoice = response.data.choices[0];
