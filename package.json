@@ -13,5 +13,10 @@
     "nextjs-cors": "^2.2.0",
     "react": "latest",
     "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.8",
+    "ts-node": "10.9.2",
+    "typescript": "5.4.5"
   }
 }
