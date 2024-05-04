@@ -15,12 +15,32 @@ export const ActionParamsByModule: { [module in EtherscanModuleName]: EtherscanM
     },
     contract: {
         getabi: { params: ["address"] },
-        getsourcecode: { params: ["address"] }
-        // ....
+        getsourcecode: { params: ["address"] },
+        getcontractcreation: { params: ["contractaddresses"] }, 
+        verifysourcecode: { params: ["address", "source", "codeformat", "contractname", "compilerversion", "optimizationUsed", "runs", "constructorArguments"] },
+        checkverifystatus: { params: ["guid"] }, 
+        verifyproxycontract: { params: ["address"] },
+        checkproxyverification: {params: ["guid"]}
     },
-    transaction: { /* actions and params */ },
-    block: { /* actions and params */ },
-    logs: { /* actions and params */ },
+    transaction: { 
+        getstatus: { params: ["txhash"] },
+        gettxreceiptstatus: { params: ["txhash"] },
+    },
+    block: { 
+        getblockreward: { params: ["blockno"] },                 
+        getblockcountdown: { params: ["blockno"] },             
+        getblocknobytime: { params: ["timestamp", "closest"] }, 
+        dailyavgblocksize: { params: ["startdate", "enddate", "sort"] },
+        dailyblkcount: { params: ["startdate", "enddate", "sort"]},
+        dailyblockrewards: { params: ["startdate", "enddate", "sort"] },
+        dailyavgblocktime: {params: ["startdate", "enddate", "sort"] },
+        dailyuncleblkcount: {params: ["startdate", "enddate", "sort"]},
+    },
+
+    logs: { 
+        getLogs: { params: ["address", "fromBlock", "toBlock", "page", "offset"] },
+        getLogsByTopics: { params: ["address", "fromBlock", "toBlock", "topic0", "topic1", "topic2", "topic3"] },
+    },
     gethParityProxy: { /* actions and params */ },
     token: { /* actions and params */ },
     gastracker: { /* actions and params */ },
